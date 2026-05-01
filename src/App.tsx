@@ -43,7 +43,8 @@ const NotesGrid = styled.div`
   }
 
   @media (max-width: 640px) {
-    column-count: 1;
+    column-count: 2;
+    column-gap: 1rem;
   }
 `;
 
