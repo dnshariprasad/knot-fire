@@ -21,8 +21,7 @@ export const useNotes = () => {
   const { encryptNote, decryptNote, masterKey, isSkipped } = useCrypto();
 
   useEffect(() => {
-    // We only load notes if the user is logged in AND they have either entered a key OR skipped encryption
-    if (!user || (!masterKey && !isSkipped)) {
+    if (!user) {
       setNotes([]);
       setLoading(false);
       return;
@@ -34,19 +33,18 @@ export const useNotes = () => {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      console.log(`[useNotes] Received snapshot with ${snapshot.size} notes`);
       const notesData: Note[] = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
-        // If it's encrypted but we don't have a key, it will stay encrypted (and show blur/lock in UI)
         const decryptedNote = decryptNote({ id: doc.id, ...data });
         notesData.push(decryptedNote);
       });
-      // Sort manually so we don't need a Firestore index
       notesData.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       setNotes(notesData);
       setLoading(false);
     }, (error) => {
-      console.error("Firestore Error:", error);
+      console.error("[useNotes] Firestore Error:", error);
       setLoading(false);
     });
 
