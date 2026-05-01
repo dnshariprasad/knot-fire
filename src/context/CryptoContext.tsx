@@ -9,7 +9,6 @@ interface CryptoContextType {
   setKey: (key: string) => void;
   encryptNote: (note: Partial<Note>) => any;
   decryptNote: (note: any) => Note;
-  isLocked: boolean;
   clearKey: () => void;
   isSkipped: boolean;
   setSkipped: (skipped: boolean) => void;
@@ -143,15 +142,63 @@ const ViewHeader = styled.div`
   gap: 0.5rem;
 `;
 
+export const LockScreen: React.FC<{ onSkip?: () => void }> = ({ onSkip }) => {
+  const { setKey } = useCrypto();
+  const [inputKey, setInputKey] = useState('');
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputKey.length >= 4) {
+      setKey(inputKey);
+    }
+  };
+
+  return (
+    <LockOverlay>
+      <LockCard>
+        <IconWrapper>
+          <Shield size={32} />
+        </IconWrapper>
+        <ViewHeader>
+          <LockTitle>Securing your Knot</LockTitle>
+          <LockDesc>Your data is protected by AES-256 bit encryption. Enter your Master Key to continue.</LockDesc>
+        </ViewHeader>
+        
+        <form onSubmit={handleUnlock} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <KeyInput 
+            type="password" 
+            placeholder="Enter Master Key" 
+            value={inputKey}
+            onChange={(e) => setInputKey(e.target.value)}
+            autoFocus
+          />
+          <UnlockButton type="submit">
+            <Key size={18} /> Unlock Data
+          </UnlockButton>
+        </form>
+
+        {onSkip && (
+          <SkipButton onClick={onSkip}>
+            Proceed without encryption <ChevronRight size={14} />
+          </SkipButton>
+        )}
+
+        <SecurityBadge>
+          <Unlock size={12} /> AES-256 Bit Encryption Active
+        </SecurityBadge>
+      </LockCard>
+    </LockOverlay>
+  );
+};
+
 export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [masterKey, setMasterKey] = useState<string | null>(() => sessionStorage.getItem('master_key'));
-  const [isSkipped, setIsSkipped] = useState(() => sessionStorage.getItem('encryption_skipped') === 'true');
-  const [inputKey, setInputKey] = useState('');
+  const [isSkipped, setIsSkipped] = useState(() => localStorage.getItem('encryption_skipped') === 'true');
 
   const setKey = (key: string) => {
     setMasterKey(key);
     sessionStorage.setItem('master_key', key);
-    sessionStorage.removeItem('encryption_skipped');
+    localStorage.removeItem('encryption_skipped');
     setIsSkipped(false);
   };
 
@@ -163,9 +210,9 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const setSkipped = (skipped: boolean) => {
     setIsSkipped(skipped);
     if (skipped) {
-      sessionStorage.setItem('encryption_skipped', 'true');
+      localStorage.setItem('encryption_skipped', 'true');
     } else {
-      sessionStorage.removeItem('encryption_skipped');
+      localStorage.removeItem('encryption_skipped');
     }
   };
 
@@ -216,58 +263,10 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const handleUnlock = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (inputKey.length >= 4) {
-      setKey(inputKey);
-    }
-  };
-
-  const handleSkip = () => {
-    setSkipped(true);
-  };
-
-  if (!masterKey && !isSkipped) {
-    return (
-      <LockOverlay>
-        <LockCard>
-          <IconWrapper>
-            <Shield size={32} />
-          </IconWrapper>
-          <ViewHeader>
-            <LockTitle>Securing your Knot</LockTitle>
-            <LockDesc>Choose to protect your notes with end-to-end encryption or proceed without a password.</LockDesc>
-          </ViewHeader>
-          
-          <form onSubmit={handleUnlock} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <KeyInput 
-              type="password" 
-              placeholder="Enter Master Key" 
-              value={inputKey}
-              onChange={(e) => setInputKey(e.target.value)}
-              autoFocus
-            />
-            <UnlockButton type="submit">
-              <Key size={18} /> Enable Encryption
-            </UnlockButton>
-          </form>
-
-          <SkipButton onClick={handleSkip}>
-            Proceed without encryption <ChevronRight size={14} />
-          </SkipButton>
-
-          <SecurityBadge>
-            <Unlock size={12} /> AES-256 Bit Encryption Available
-          </SecurityBadge>
-        </LockCard>
-      </LockOverlay>
-    );
-  }
-
   return (
     <CryptoContext.Provider value={{ 
       masterKey, setKey, encryptNote, decryptNote, 
-      isLocked: !masterKey, clearKey, isSkipped, setSkipped 
+      clearKey, isSkipped, setSkipped 
     }}>
       {children}
     </CryptoContext.Provider>

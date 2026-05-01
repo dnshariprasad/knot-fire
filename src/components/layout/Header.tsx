@@ -59,6 +59,8 @@ const AddButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  border: none;
+  cursor: pointer;
 
   span {
     @media (max-width: 640px) {
@@ -74,12 +76,14 @@ const AddButton = styled.button`
 interface HeaderProps {
   onAddNote: () => void;
   onThemeToggle: () => void;
+  onSecurityClick: () => void;
   themeMode: 'light' | 'dark';
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
   onAddNote,
   onThemeToggle,
+  onSecurityClick,
   themeMode
 }) => {
   return (
@@ -97,7 +101,11 @@ export const Header: React.FC<HeaderProps> = ({
             <Plus size={20} />
             <span>New Note</span>
           </AddButton>
-          <UserDropdown onThemeToggle={onThemeToggle} themeMode={themeMode} />
+          <UserDropdown 
+            onThemeToggle={onThemeToggle} 
+            onSecurityClick={onSecurityClick}
+            themeMode={themeMode} 
+          />
         </RightSection>
       </HeaderContent>
     </HeaderContainer>

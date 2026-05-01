@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { LogOut, User as UserIcon, Moon, Sun, ChevronDown } from 'lucide-react';
+import { LogOut, User as UserIcon, Moon, Sun, ChevronDown, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -73,6 +73,7 @@ const MenuItem = styled.button<{ $danger?: boolean }>`
   font-weight: 500;
   border: none;
   cursor: pointer;
+  transition: all 0.2s ease;
 
   &:hover {
     background: ${({ theme }) => theme.colors.surfaceLight};
@@ -81,10 +82,11 @@ const MenuItem = styled.button<{ $danger?: boolean }>`
 
 interface UserDropdownProps {
   onThemeToggle: () => void;
+  onSecurityClick: () => void;
   themeMode: 'light' | 'dark';
 }
 
-export const UserDropdown: React.FC<UserDropdownProps> = ({ onThemeToggle, themeMode }) => {
+export const UserDropdown: React.FC<UserDropdownProps> = ({ onThemeToggle, onSecurityClick, themeMode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -126,6 +128,10 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({ onThemeToggle, theme
               ) : (
                 <><Sun size={16} /> Light Mode</>
               )}
+            </MenuItem>
+
+            <MenuItem onClick={() => { onSecurityClick(); setIsOpen(false); }}>
+              <Shield size={16} /> Security
             </MenuItem>
 
             <MenuItem $danger onClick={logout}>

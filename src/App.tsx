@@ -12,6 +12,8 @@ import { FilterToolbar } from './components/filters/FilterToolbar';
 import { Toaster } from 'react-hot-toast';
 import { GlobalStyles } from './styles/GlobalStyles';
 import { useTheme } from './styles/ThemeContext';
+import { useCrypto, LockScreen } from './context/CryptoContext';
+import { SecurityModal } from './components/layout/SecurityModal';
 
 const AppContainer = styled.div`
   background: ${({ theme }) => theme.colors.background};
@@ -85,10 +87,12 @@ function App() {
   const { user } = useAuth();
   const { notes, loading: notesLoading, addNote, updateNote, deleteNote } = useNotes();
   const { themeMode, toggleTheme, currentTheme } = useTheme();
+  const { masterKey, setSkipped, isSkipped } = useCrypto();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
 
   const handleToggleTag = (tag: string) => {
@@ -135,6 +139,19 @@ function App() {
     });
   }, [notes, searchQuery, selectedTags]);
 
+  // ONLY show lock screen if we actually have encrypted notes AND user hasn't explicitly skipped unlocking them
+  const anyEncrypted = useMemo(() => notes.some(n => n.isEncrypted), [notes]);
+  const shouldShowLock = anyEncrypted && !masterKey && !isSkipped;
+
+  if (user && shouldShowLock) {
+    return (
+      <>
+        <GlobalStyles />
+        <LockScreen onSkip={() => setSkipped(true)} />
+      </>
+    );
+  }
+
   return (
     <>
       <GlobalStyles />
@@ -148,6 +165,7 @@ function App() {
               setIsModalOpen(true);
             }}
             onThemeToggle={toggleTheme}
+            onSecurityClick={() => setIsSecurityOpen(true)}
             themeMode={themeMode}
           />
 
@@ -209,6 +227,11 @@ function App() {
               }}
             />
           )}
+
+          {isSecurityOpen && (
+            <SecurityModal onClose={() => setIsSecurityOpen(false)} />
+          )}
+
           <Toaster 
             position="bottom-right"
             toastOptions={{
