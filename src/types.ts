@@ -12,4 +12,7 @@ export interface Note {
   createdAt: number;
   updatedAt: number;
   userId: string;
+  isEncrypted?: boolean;
+  isPrivate?: boolean;
+  pin?: string;
 }

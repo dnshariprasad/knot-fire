@@ -12,6 +12,8 @@
     "deploy:full": "./deploy.sh"
   },
   "dependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "crypto-js": "^4.2.0",
     "firebase": "^12.12.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.14.0",

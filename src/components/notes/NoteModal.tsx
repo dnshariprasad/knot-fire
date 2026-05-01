@@ -4,7 +4,7 @@ import {
   X, Type, Layout, Tag as TagIcon, PlusCircle, Trash2, 
   Calendar, MapPin, Share2, MoreVertical, Edit2, Plus, 
   ExternalLink, User as UserIcon, Lock as LockIcon,
-  Eye, EyeOff, Hash
+  Eye, EyeOff, Hash, Key
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -72,7 +72,7 @@ const Label = styled.label`
   color: ${({ theme }) => theme.colors.textMuted};
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: space-between;
   text-transform: uppercase;
   letter-spacing: 0.025em;
 `;
@@ -231,6 +231,7 @@ const Button = styled.button<{ $variant?: 'primary' | 'outline' | 'danger' }>`
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   border: none;
 
@@ -251,6 +252,29 @@ const Button = styled.button<{ $variant?: 'primary' | 'outline' | 'danger' }>`
     `;
     return '';
   }}
+`;
+
+const Toggle = styled.button<{ $active: boolean }>`
+  width: 40px;
+  height: 20px;
+  border-radius: 20px;
+  background: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
+  position: relative;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: ${({ $active }) => $active ? '22px' : '2px'};
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
 `;
 
 const ViewContent = styled.div`
@@ -345,6 +369,27 @@ const FieldValue = styled.div`
   }
 `;
 
+const LockView = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  gap: 1.5rem;
+  text-align: center;
+`;
+
+const LockIconWrapper = styled.div`
+  width: 64px;
+  height: 64px;
+  background: ${({ theme }) => theme.colors.primary + '15'};
+  color: ${({ theme }) => theme.colors.primary};
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 const Popover = styled.div`
   position: absolute;
   top: 100%;
@@ -394,6 +439,11 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
   const [tagInputValue, setTagInputValue] = useState('');
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [revealedFields, setRevealedFields] = useState<Record<number, boolean>>({});
+  
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [pin, setPin] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
+  const [verifyPin, setVerifyPin] = useState('');
 
   useEffect(() => {
     if (note) {
@@ -401,14 +451,21 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
       setContent(note.content);
       setTagList(note.tags || []);
       setCustomFields(note.customFields || []);
+      setIsPrivate(note.isPrivate || false);
+      setPin(note.pin || '');
+      setIsVerified(!note.isPrivate);
     } else {
       setTitle('');
       setContent('');
       setTagList([]);
       setCustomFields([]);
+      setIsPrivate(false);
+      setPin('');
+      setIsVerified(true);
     }
     setRevealedFields({});
     setIsEditing(!note);
+    setVerifyPin('');
   }, [note]);
 
   const handleAddTag = (_e?: React.KeyboardEvent | React.FocusEvent) => {
@@ -424,6 +481,11 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
   };
 
   const handleSave = () => {
+    if (isPrivate && !pin) {
+      toast.error('Please enter a PIN for the private note');
+      return;
+    }
+
     const currentTags = [...tagList];
     const finalVal = tagInputValue.trim().toLowerCase();
     if (finalVal && !currentTags.includes(finalVal)) {
@@ -435,7 +497,20 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
       content,
       tags: currentTags,
       customFields: customFields.filter(f => f.label.trim() !== ''),
+      isPrivate,
+      pin
     });
+  };
+
+  const handleVerify = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (verifyPin === pin) {
+      setIsVerified(true);
+      toast.success('Note Unlocked');
+    } else {
+      toast.error('Incorrect PIN');
+      setVerifyPin('');
+    }
   };
 
   const handleShare = async () => {
@@ -477,9 +552,12 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
           onClick={(e) => e.stopPropagation()}
         >
           <Header>
-            <Title>{isEditing ? (note ? 'Edit Note' : 'Create New Note') : 'Note View'}</Title>
+            <Title>
+              {isEditing ? (note ? 'Edit Note' : 'Create New Note') : 'Note View'}
+              {isPrivate && isVerified && <LockIcon size={16} style={{ marginLeft: '0.5rem', opacity: 0.5 }} />}
+            </Title>
             <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
-              {!isEditing && (
+              {!isEditing && isVerified && (
                 <>
                   <IconButton onClick={() => setShowMore(!showMore)}>
                     <MoreVertical size={20} />
@@ -508,10 +586,38 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
           </Header>
 
           <Body>
-            {isEditing ? (
+            {!isVerified ? (
+              <LockView>
+                <LockIconWrapper>
+                  <LockIcon size={32} />
+                </LockIconWrapper>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <h3>This note is private</h3>
+                  <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>Enter the 4-digit PIN to reveal its content.</p>
+                </div>
+                <form onSubmit={handleVerify} style={{ width: '100%', maxWidth: '240px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <Input 
+                    type="password" 
+                    placeholder="PIN" 
+                    maxLength={4}
+                    value={verifyPin}
+                    onChange={(e) => setVerifyPin(e.target.value.replace(/\D/g, ''))}
+                    style={{ textAlign: 'center', letterSpacing: '0.5rem', fontSize: '1.25rem' }}
+                    autoFocus
+                  />
+                  <Button type="submit" $variant="primary">
+                    <Key size={18} /> Unlock
+                  </Button>
+                </form>
+              </LockView>
+            ) : isEditing ? (
               <>
                 <FormGroup>
-                  <Label><Type size={14} /> Title</Label>
+                  <Label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Type size={14} /> Title
+                    </div>
+                  </Label>
                   <Input 
                     placeholder="Note title..." 
                     value={title}
@@ -520,7 +626,11 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                 </FormGroup>
 
                 <FormGroup>
-                  <Label><Layout size={14} /> Description</Label>
+                  <Label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Layout size={14} /> Description
+                    </div>
+                  </Label>
                   <TextArea 
                     placeholder="Write your note content here..." 
                     value={content}
@@ -529,7 +639,11 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                 </FormGroup>
 
                 <FormGroup>
-                  <Label><TagIcon size={14} /> Tags</Label>
+                  <Label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <TagIcon size={14} /> Tags
+                    </div>
+                  </Label>
                   <TagInputWrapper onClick={() => document.getElementById('tag-input')?.focus()}>
                     {tagList.map(tag => (
                       <Chip key={tag}>
@@ -557,8 +671,10 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
 
                 <DynamicFieldsSection>
                   <Label>
-                    <PlusCircle size={14} /> Additional Fields
-                    <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <PlusCircle size={14} /> Additional Fields
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <Button 
                         type="button"
                         $variant="outline" 
@@ -574,14 +690,6 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                         onClick={() => setCustomFields([...customFields, { label: 'Password', value: '' }])}
                       >
                         + Pass
-                      </Button>
-                      <Button 
-                        type="button"
-                        $variant="outline" 
-                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
-                        onClick={() => setCustomFields([...customFields, { label: 'Link', value: '' }])}
-                      >
-                        + Link
                       </Button>
                       <IconButton onClick={() => setCustomFields([...customFields, { label: '', value: '' }])} $variant="primary">
                         <Plus size={16} />
@@ -618,6 +726,31 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                     </FieldRow>
                   ))}
                 </DynamicFieldsSection>
+
+                <FormGroup style={{ marginTop: '1rem', padding: '1rem', background: '#f8fafc10', borderRadius: '12px', border: '1px solid #e2e8f010' }}>
+                  <Label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: isPrivate ? '#6366f1' : 'inherit' }}>
+                      <LockIcon size={14} /> Private Note
+                    </div>
+                    <Toggle $active={isPrivate} onClick={() => setIsPrivate(!isPrivate)} />
+                  </Label>
+                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '-0.25rem' }}>
+                    Private notes are hidden on the dashboard and require a PIN to open.
+                  </p>
+                  {isPrivate && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ marginTop: '1rem' }}>
+                      <Label>Set 4-digit PIN</Label>
+                      <Input 
+                        type="password" 
+                        maxLength={4} 
+                        placeholder="••••" 
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                        style={{ marginTop: '0.5rem', textAlign: 'center', letterSpacing: '0.5rem' }}
+                      />
+                    </motion.div>
+                  )}
+                </FormGroup>
               </>
             ) : (
               <ViewContent>

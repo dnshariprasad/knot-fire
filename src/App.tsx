@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import styled, { ThemeProvider } from 'styled-components';
+import { useState, useMemo } from 'react';
+import styled from 'styled-components';
 import { Plus, Loader2 } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { useNotes } from './hooks/useNotes';
@@ -9,13 +9,15 @@ import { NoteCard } from './components/notes/NoteCard';
 import { NoteModal } from './components/notes/NoteModal';
 import type { Note } from './types';
 import { FilterToolbar } from './components/filters/FilterToolbar';
-import toast, { Toaster } from 'react-hot-toast';
-import { darkTheme, lightTheme } from './styles/theme';
+import { Toaster } from 'react-hot-toast';
 import { GlobalStyles } from './styles/GlobalStyles';
+import { useTheme } from './styles/ThemeContext';
 
 const AppContainer = styled.div`
   background: ${({ theme }) => theme.colors.background};
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   transition: background 0.3s ease;
 `;
 
@@ -74,30 +76,38 @@ const AddButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  border: none;
+  cursor: pointer;
 `;
 
 function App() {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const { notes, loading: notesLoading, addNote, updateNote, deleteNote } = useNotes();
-  
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(() => {
-    return (localStorage.getItem('theme') as 'light' | 'dark') || 'dark';
-  });
+  const { themeMode, toggleTheme, currentTheme } = useTheme();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
 
-  useEffect(() => {
-    localStorage.setItem('theme', themeMode);
-  }, [themeMode]);
-
-  const toggleTheme = () => {
-    setThemeMode(prev => prev === 'light' ? 'dark' : 'light');
+  const handleToggleTag = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
   };
 
-  const currentTheme = themeMode === 'light' ? lightTheme : darkTheme;
+  const handleSaveNote = async (noteData: Partial<Note>) => {
+    try {
+      if (editingNote) {
+        await updateNote(editingNote.id, noteData);
+      } else {
+        await addNote(noteData as any);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Save Error:", error);
+    }
+  };
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
@@ -113,43 +123,19 @@ function App() {
   const filteredNotes = useMemo(() => {
     return notes.filter(note => {
       const matchesSearch = note.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          note.content.toLowerCase().includes(searchQuery.toLowerCase());
+                           note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           note.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                           note.customFields.some(f => f.value.toLowerCase().includes(searchQuery.toLowerCase()));
       
       const matchesTags = selectedTags.length === 0 || 
-                         selectedTags.some(selectedTag => 
-                           note.tags.includes(selectedTag) || 
-                           note.customFields.some(f => f.label.trim() === selectedTag)
-                         );
+                         selectedTags.every(tag => note.tags.includes(tag) || note.customFields.some(f => f.label === tag));
       
       return matchesSearch && matchesTags;
     });
   }, [notes, searchQuery, selectedTags]);
 
-  const handleToggleTag = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
-  };
-
-  const handleSaveNote = async (noteData: Partial<Note>) => {
-    try {
-      if (editingNote) {
-        await updateNote(editingNote.id, noteData);
-        toast.success('Note updated!');
-      } else {
-        await addNote(noteData as Omit<Note, 'id' | 'userId' | 'createdAt' | 'updatedAt'>);
-        toast.success('Note created!');
-      }
-      setIsModalOpen(false);
-    } catch (err) {
-      toast.error('Failed to save note');
-    }
-  };
-
-  if (authLoading) return null;
-
   return (
-    <ThemeProvider theme={currentTheme}>
+    <>
       <GlobalStyles />
       {!user ? (
         <Login />
@@ -234,7 +220,7 @@ function App() {
           />
         </AppContainer>
       )}
-    </ThemeProvider>
+    </>
   );
 }
 

@@ -12,14 +12,17 @@ import {
 import { db } from '../firebase';
 import type { Note } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useCrypto } from '../context/CryptoContext';
 
 export const useNotes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { encryptNote, decryptNote, masterKey, isSkipped } = useCrypto();
 
   useEffect(() => {
-    if (!user) {
+    // We only load notes if the user is logged in AND they have either entered a key OR skipped encryption
+    if (!user || (!masterKey && !isSkipped)) {
       setNotes([]);
       setLoading(false);
       return;
@@ -33,7 +36,10 @@ export const useNotes = () => {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const notesData: Note[] = [];
       snapshot.forEach((doc) => {
-        notesData.push({ id: doc.id, ...doc.data() } as Note);
+        const data = doc.data();
+        // If it's encrypted but we don't have a key, it will stay encrypted (and show blur/lock in UI)
+        const decryptedNote = decryptNote({ id: doc.id, ...data });
+        notesData.push(decryptedNote);
       });
       // Sort manually so we don't need a Firestore index
       notesData.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -45,14 +51,16 @@ export const useNotes = () => {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, masterKey, isSkipped]);
 
   const addNote = async (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     if (!user) return;
     
     const now = Date.now();
+    const processedData = encryptNote(note);
+    
     await addDoc(collection(db, 'notes'), {
-      ...note,
+      ...processedData,
       userId: user.uid,
       createdAt: now,
       updatedAt: now,
@@ -60,9 +68,13 @@ export const useNotes = () => {
   };
 
   const updateNote = async (id: string, note: Partial<Note>) => {
+    if (!user) return;
+    
     const noteRef = doc(db, 'notes', id);
+    const processedData = encryptNote(note);
+    
     await updateDoc(noteRef, {
-      ...note,
+      ...processedData,
       updatedAt: Date.now(),
     });
   };

@@ -23,6 +23,7 @@ const Card = styled(motion.div)`
   break-inside: avoid;
   margin-bottom: 1.5rem;
   width: 100%;
+  overflow: hidden;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
@@ -38,7 +39,7 @@ const Header = styled.div`
   gap: 1rem;
 `;
 
-const Title = styled.h3`
+const Title = styled.h3<{ $blurred?: boolean }>`
   font-size: 1rem;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.text};
@@ -46,6 +47,8 @@ const Title = styled.h3`
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
+  filter: ${({ $blurred }) => $blurred ? 'blur(4px)' : 'none'};
+  opacity: ${({ $blurred }) => $blurred ? 0.3 : 1};
 `;
 
 const MoreButton = styled.button`
@@ -94,7 +97,7 @@ const PopoverItem = styled.button<{ $danger?: boolean }>`
   }
 `;
 
-const Content = styled.p`
+const Content = styled.p<{ $blurred?: boolean }>`
   font-size: 0.875rem;
   color: ${({ theme }) => theme.colors.textMuted};
   display: -webkit-box;
@@ -102,13 +105,17 @@ const Content = styled.p`
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.6;
+  filter: ${({ $blurred }) => $blurred ? 'blur(8px)' : 'none'};
+  opacity: ${({ $blurred }) => $blurred ? 0.2 : 1};
 `;
 
-const TagContainer = styled.div`
+const TagContainer = styled.div<{ $blurred?: boolean }>`
   display: flex;
   flex-wrap: wrap;
   gap: 0.375rem;
   margin-top: 0.25rem;
+  filter: ${({ $blurred }) => $blurred ? 'blur(4px)' : 'none'};
+  opacity: ${({ $blurred }) => $blurred ? 0.2 : 1};
 `;
 
 const Tag = styled.span`
@@ -131,13 +138,15 @@ const Tag = styled.span`
   }
 `;
 
-const FieldsGrid = styled.div`
+const FieldsGrid = styled.div<{ $blurred?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.25rem;
   padding-top: 0.75rem;
   border-top: 1px dashed ${({ theme }) => theme.colors.border};
+  filter: ${({ $blurred }) => $blurred ? 'blur(6px)' : 'none'};
+  opacity: ${({ $blurred }) => $blurred ? 0.2 : 1};
 `;
 
 const FieldItem = styled.div`
@@ -163,6 +172,35 @@ const FieldItem = styled.div`
   }
 `;
 
+const PrivateOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  z-index: 5;
+  background: transparent;
+`;
+
+const PrivateBadge = styled.div`
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.text};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+`;
+
 interface NoteCardProps {
   note: Note;
   onClick: () => void;
@@ -175,6 +213,10 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onDelete, onT
 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (note.isPrivate) {
+      toast.error('Cannot share private notes from the dashboard. Open the note first.');
+      return;
+    }
     try {
       if (navigator.share) {
         await navigator.share({
@@ -221,7 +263,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onDelete, onT
       onClick={onClick}
     >
       <Header>
-        <Title>{note.title}</Title>
+        <Title $blurred={note.isPrivate}>{note.title || 'Untitled Private Note'}</Title>
         <div style={{ position: 'relative' }}>
           <MoreButton onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}>
             <MoreVertical size={16} />
@@ -239,10 +281,12 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onDelete, onT
         </div>
       </Header>
 
-      <Content>{note.content}</Content>
+      <Content $blurred={note.isPrivate}>
+        {note.isPrivate ? 'This content is hidden because the note is private. Click to reveal.' : note.content}
+      </Content>
 
       {note.tags.length > 0 && (
-        <TagContainer>
+        <TagContainer $blurred={note.isPrivate}>
           {note.tags.map(tag => (
             <Tag key={tag} onClick={(e) => { e.stopPropagation(); onToggleTag(tag); }}>
               <Hash size={10} /> {tag}
@@ -252,7 +296,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onDelete, onT
       )}
 
       {note.customFields.length > 0 && (
-        <FieldsGrid>
+        <FieldsGrid $blurred={note.isPrivate}>
           {note.customFields.map((field, idx) => (
             <FieldItem key={idx}>
               {getFieldIcon(field.label)}
@@ -263,6 +307,14 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onDelete, onT
             </FieldItem>
           ))}
         </FieldsGrid>
+      )}
+
+      {note.isPrivate && (
+        <PrivateOverlay>
+          <PrivateBadge>
+            <LockIcon size={14} /> Private
+          </PrivateBadge>
+        </PrivateOverlay>
       )}
     </Card>
   );

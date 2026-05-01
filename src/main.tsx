@@ -3,11 +3,17 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 
 import { AuthProvider } from './context/AuthContext'
+import { CryptoProvider } from './context/CryptoContext'
+import { ThemeProvider } from './styles/ThemeContext'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CryptoProvider>
+          <App />
+        </CryptoProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </React.StrictMode>,
 );
