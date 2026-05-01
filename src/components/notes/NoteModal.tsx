@@ -50,6 +50,12 @@ const Title = styled.h2`
   font-size: 1.25rem;
   font-weight: 800;
   color: ${({ theme }) => theme.colors.text};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const Body = styled.div`
@@ -67,14 +73,15 @@ const FormGroup = styled.div`
 `;
 
 const Label = styled.label`
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.textMuted};
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.5rem;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
 `;
 
 const Input = styled.input`
@@ -84,24 +91,25 @@ const Input = styled.input`
   border-radius: ${({ theme }) => theme.borderRadius.md};
   padding: 0.75rem 1rem;
   color: ${({ theme }) => theme.colors.text};
-  font-size: 1rem;
+  font-size: 0.9375rem;
   transition: all 0.2s ease;
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
     background: ${({ theme }) => theme.colors.surface};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primary + '20'};
   }
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
-  min-height: 150px;
+  min-height: 120px;
   background: ${({ theme }) => theme.colors.surfaceLight};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   padding: 1rem;
   color: ${({ theme }) => theme.colors.text};
-  font-size: 1rem;
+  font-size: 0.9375rem;
   line-height: 1.6;
   resize: vertical;
   transition: all 0.2s ease;
@@ -109,6 +117,7 @@ const TextArea = styled.textarea`
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
     background: ${({ theme }) => theme.colors.surface};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primary + '20'};
   }
 `;
 
@@ -116,7 +125,7 @@ const TagInputWrapper = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  padding: 0.625rem;
+  padding: 0.75rem;
   background: ${({ theme }) => theme.colors.surfaceLight};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
@@ -125,6 +134,7 @@ const TagInputWrapper = styled.div`
 
   &:focus-within {
     border-color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.surface};
   }
 `;
 
@@ -140,20 +150,21 @@ const TagInput = styled.input`
 `;
 
 const Chip = styled.span`
-  background: ${({ theme }) => theme.colors.primary};
-  color: white;
-  padding: 0.25rem 0.625rem;
+  background: ${({ theme }) => theme.colors.primary + '20'};
+  color: ${({ theme }) => theme.colors.primary};
+  border: 1px solid ${({ theme }) => theme.colors.primary + '30'};
+  padding: 0.375rem 0.75rem;
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.375rem;
 
   button {
     background: transparent;
     border: none;
-    color: white;
+    color: inherit;
     padding: 0;
     display: flex;
     align-items: center;
@@ -169,7 +180,44 @@ const DynamicFieldsSection = styled.div`
   gap: 1rem;
 `;
 
-const FieldRow = styled.div`
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+`;
+
+const QuickActionToolbar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const QuickActionButton = styled.button`
+  background: ${({ theme }) => theme.colors.surfaceLight};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.textMuted};
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.primary + '10'};
+  }
+`;
+
+const FieldRow = styled(motion.div)`
   display: flex;
   gap: 0.75rem;
   align-items: center;
@@ -178,7 +226,7 @@ const FieldRow = styled.div`
 const IconButton = styled.button<{ $variant?: 'primary' | 'danger' | 'outline' }>`
   background: ${({ theme, $variant }) => 
     $variant === 'primary' ? theme.colors.primary : 
-    $variant === 'danger' ? theme.colors.error + '15' : 
+    $variant === 'danger' ? theme.colors.error + '10' : 
     'transparent'};
   color: ${({ theme, $variant }) => 
     $variant === 'primary' ? 'white' : 
@@ -186,22 +234,44 @@ const IconButton = styled.button<{ $variant?: 'primary' | 'danger' | 'outline' }
     theme.colors.textMuted};
   padding: 0.5rem;
   border-radius: 8px;
-  border: none;
+  border: ${({ theme, $variant }) => $variant === 'danger' ? `1px solid ${theme.colors.error}30` : 'none'};
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 
   &:hover {
     background: ${({ theme, $variant }) => 
       $variant === 'primary' ? theme.colors.primaryDark : 
-      $variant === 'danger' ? theme.colors.error + '25' : 
+      $variant === 'danger' ? theme.colors.error + '20' : 
       theme.colors.surfaceLight};
     color: ${({ theme, $variant }) => 
       $variant === 'primary' ? 'white' : 
       $variant === 'danger' ? theme.colors.error : 
       theme.colors.text};
+  }
+`;
+
+const AddFieldButton = styled.button`
+  background: ${({ theme }) => theme.colors.primary};
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px ${({ theme }) => theme.colors.primary + '40'};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryDark};
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px ${({ theme }) => theme.colors.primary + '60'};
   }
 `;
 
@@ -225,7 +295,7 @@ const Timestamp = styled.div`
 const Button = styled.button<{ $variant?: 'primary' | 'outline' | 'danger' }>`
   padding: 0.625rem 1.25rem;
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -239,7 +309,11 @@ const Button = styled.button<{ $variant?: 'primary' | 'outline' | 'danger' }>`
     if ($variant === 'primary') return `
       background: ${theme.colors.primary};
       color: white;
-      &:hover { background: ${theme.colors.primaryDark}; }
+      box-shadow: 0 2px 4px ${theme.colors.primary}40;
+      &:hover { 
+        background: ${theme.colors.primaryDark};
+        box-shadow: 0 4px 8px ${theme.colors.primary}60;
+      }
     `;
     if ($variant === 'outline') return `
       background: transparent;
@@ -255,9 +329,9 @@ const Button = styled.button<{ $variant?: 'primary' | 'outline' | 'danger' }>`
 `;
 
 const Toggle = styled.button<{ $active: boolean }>`
-  width: 40px;
-  height: 20px;
-  border-radius: 20px;
+  width: 36px;
+  height: 18px;
+  border-radius: 18px;
   background: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
   position: relative;
   border: none;
@@ -268,9 +342,9 @@ const Toggle = styled.button<{ $active: boolean }>`
     content: '';
     position: absolute;
     top: 2px;
-    left: ${({ $active }) => $active ? '22px' : '2px'};
-    width: 16px;
-    height: 16px;
+    left: ${({ $active }) => $active ? '20px' : '2px'};
+    width: 14px;
+    height: 14px;
     background: white;
     border-radius: 50%;
     transition: all 0.3s ease;
@@ -341,18 +415,20 @@ const FieldCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  border: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 const FieldLabel = styled.span`
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.textMuted};
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 `;
 
 const FieldValue = styled.div`
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.9375rem;
+  font-weight: 600;
   word-break: break-all;
   display: flex;
   align-items: center;
@@ -553,8 +629,9 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
         >
           <Header>
             <Title>
-              {isEditing ? (note ? 'Edit Note' : 'Create New Note') : 'Note View'}
-              {isPrivate && isVerified && <LockIcon size={16} style={{ marginLeft: '0.5rem', opacity: 0.5 }} />}
+              {isEditing ? (note ? 'Edit Note' : 'Create New Note') : title}
+              {isPrivate && !isVerified && <LockIcon size={16} style={{ marginLeft: '0.25rem', color: '#6366f1' }} />}
+              {isPrivate && isVerified && <LockIcon size={16} style={{ marginLeft: '0.25rem', opacity: 0.5 }} />}
             </Title>
             <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
               {!isEditing && isVerified && (
@@ -592,7 +669,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                   <LockIcon size={32} />
                 </LockIconWrapper>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <h3>This note is private</h3>
+                  <h3 style={{ fontSize: '1.25rem' }}>Private Note Locked</h3>
                   <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>Enter the 4-digit PIN to reveal its content.</p>
                 </div>
                 <form onSubmit={handleVerify} style={{ width: '100%', maxWidth: '240px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -602,22 +679,18 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                     maxLength={4}
                     value={verifyPin}
                     onChange={(e) => setVerifyPin(e.target.value.replace(/\D/g, ''))}
-                    style={{ textAlign: 'center', letterSpacing: '0.5rem', fontSize: '1.25rem' }}
+                    style={{ textAlign: 'center', letterSpacing: '0.5rem', fontSize: '1.5rem', fontWeight: 800 }}
                     autoFocus
                   />
-                  <Button type="submit" $variant="primary">
-                    <Key size={18} /> Unlock
+                  <Button type="submit" $variant="primary" style={{ height: '48px' }}>
+                    <Key size={18} /> Unlock Note
                   </Button>
                 </form>
               </LockView>
             ) : isEditing ? (
               <>
                 <FormGroup>
-                  <Label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Type size={14} /> Title
-                    </div>
-                  </Label>
+                  <Label><Type size={14} /> Title</Label>
                   <Input 
                     placeholder="Note title..." 
                     value={title}
@@ -626,11 +699,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Layout size={14} /> Description
-                    </div>
-                  </Label>
+                  <Label><Layout size={14} /> Description</Label>
                   <TextArea 
                     placeholder="Write your note content here..." 
                     value={content}
@@ -639,11 +708,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <TagIcon size={14} /> Tags
-                    </div>
-                  </Label>
+                  <Label><TagIcon size={14} /> Tags</Label>
                   <TagInputWrapper onClick={() => document.getElementById('tag-input')?.focus()}>
                     {tagList.map(tag => (
                       <Chip key={tag}>
@@ -670,39 +735,37 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                 </FormGroup>
 
                 <DynamicFieldsSection>
-                  <Label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <PlusCircle size={14} /> Additional Fields
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <Button 
-                        type="button"
-                        $variant="outline" 
-                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
-                        onClick={() => setCustomFields([...customFields, { label: 'ID', value: '' }])}
-                      >
-                        + ID
-                      </Button>
-                      <Button 
-                        type="button"
-                        $variant="outline" 
-                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
-                        onClick={() => setCustomFields([...customFields, { label: 'Password', value: '' }])}
-                      >
-                        + Pass
-                      </Button>
-                      <IconButton onClick={() => setCustomFields([...customFields, { label: '', value: '' }])} $variant="primary">
+                  <SectionHeader>
+                    <Label style={{ margin: 0 }}><PlusCircle size={14} /> Additional Fields</Label>
+                    <QuickActionToolbar>
+                      <QuickActionButton onClick={() => setCustomFields([...customFields, { label: 'ID', value: '' }])}>
+                        <UserIcon size={12} /> ID
+                      </QuickActionButton>
+                      <QuickActionButton onClick={() => setCustomFields([...customFields, { label: 'Password', value: '' }])}>
+                        <LockIcon size={12} /> Password
+                      </QuickActionButton>
+                      <QuickActionButton onClick={() => setCustomFields([...customFields, { label: 'Link', value: '' }])}>
+                        <ExternalLink size={12} /> Link
+                      </QuickActionButton>
+                      <QuickActionButton onClick={() => setCustomFields([...customFields, { label: 'Date', value: '' }])}>
+                        <Calendar size={12} /> Date
+                      </QuickActionButton>
+                      <AddFieldButton onClick={() => setCustomFields([...customFields, { label: '', value: '' }])}>
                         <Plus size={16} />
-                      </IconButton>
-                    </div>
-                  </Label>
+                      </AddFieldButton>
+                    </QuickActionToolbar>
+                  </SectionHeader>
                   
                   {customFields.map((field, idx) => (
-                    <FieldRow key={idx}>
+                    <FieldRow 
+                      key={idx}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                    >
                       <Input 
                         placeholder="Label" 
                         value={field.label}
-                        style={{ flex: 1 }}
+                        style={{ flex: 1.2 }}
                         onChange={(e) => {
                           const updated = [...customFields];
                           updated[idx].label = e.target.value;
@@ -727,26 +790,28 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                   ))}
                 </DynamicFieldsSection>
 
-                <FormGroup style={{ marginTop: '1rem', padding: '1rem', background: '#f8fafc10', borderRadius: '12px', border: '1px solid #e2e8f010' }}>
-                  <Label>
+                <FormGroup style={{ marginTop: '1rem', padding: '1.25rem', background: '#f8fafc05', borderRadius: '12px', border: '1px solid #e2e8f010' }}>
+                  <Label style={{ marginBottom: '0.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: isPrivate ? '#6366f1' : 'inherit' }}>
                       <LockIcon size={14} /> Private Note
                     </div>
-                    <Toggle $active={isPrivate} onClick={() => setIsPrivate(!isPrivate)} />
+                    <div style={{ marginLeft: 'auto' }}>
+                      <Toggle $active={isPrivate} onClick={() => setIsPrivate(!isPrivate)} />
+                    </div>
                   </Label>
-                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '-0.25rem' }}>
-                    Private notes are hidden on the dashboard and require a PIN to open.
+                  <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: isPrivate ? '1rem' : 0 }}>
+                    Hide this note from the main dashboard behind a custom 4-digit PIN.
                   </p>
                   {isPrivate && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ marginTop: '1rem' }}>
-                      <Label>Set 4-digit PIN</Label>
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                      <Label style={{ fontSize: '0.65rem' }}>Set Security PIN</Label>
                       <Input 
                         type="password" 
                         maxLength={4} 
                         placeholder="••••" 
                         value={pin}
                         onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                        style={{ marginTop: '0.5rem', textAlign: 'center', letterSpacing: '0.5rem' }}
+                        style={{ marginTop: '0.4rem', textAlign: 'center', letterSpacing: '0.5rem', fontSize: '1.25rem' }}
                       />
                     </motion.div>
                   )}
@@ -832,7 +897,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                 })}
               </Timestamp>
             )}
-            <div style={{ display: 'flex', gap: '1rem', marginLeft: 'auto' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginLeft: 'auto' }}>
               {isEditing ? (
                 <>
                   <Button $variant="outline" onClick={() => note ? setIsEditing(false) : onClose()}>Cancel</Button>
