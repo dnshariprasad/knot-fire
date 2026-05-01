@@ -1,19 +1,25 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Plus, Hash } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { UserDropdown } from './UserDropdown';
 
 const HeaderContainer = styled.header`
-  padding: 1rem 2rem;
-  background: ${({ theme }) => theme.colors.surface};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: ${({ theme }) => theme.colors.background};
   position: sticky;
   top: 0;
   z-index: 1000;
   transition: all 0.3s ease;
+  width: 100%;
+`;
+
+const HeaderContent = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 `;
 
 const LeftSection = styled.div`
@@ -78,20 +84,22 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <HeaderContainer>
-      <LeftSection>
-        <Logo>
-          <Hash size={24} />
-          <span>Knot</span>
-        </Logo>
-      </LeftSection>
+      <HeaderContent>
+        <LeftSection>
+          <Logo onClick={() => window.location.reload()}>
+            <img src="/favicon.svg" alt="Knot Logo" width="32" height="32" />
+            <span>Knot</span>
+          </Logo>
+        </LeftSection>
 
-      <RightSection>
-        <AddButton onClick={onAddNote}>
-          <Plus size={20} />
-          <span>New Note</span>
-        </AddButton>
-        <UserDropdown onThemeToggle={onThemeToggle} themeMode={themeMode} />
-      </RightSection>
+        <RightSection>
+          <AddButton onClick={onAddNote}>
+            <Plus size={20} />
+            <span>New Note</span>
+          </AddButton>
+          <UserDropdown onThemeToggle={onThemeToggle} themeMode={themeMode} />
+        </RightSection>
+      </HeaderContent>
     </HeaderContainer>
   );
 };

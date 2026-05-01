@@ -32,9 +32,17 @@ const MainContent = styled.main`
 `;
 
 const NotesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  column-count: 3;
+  column-gap: 1.5rem;
+  width: 100%;
+
+  @media (max-width: 1100px) {
+    column-count: 2;
+  }
+
+  @media (max-width: 640px) {
+    column-count: 1;
+  }
 `;
 
 const EmptyState = styled.div`
@@ -158,11 +166,10 @@ function App() {
 
           <FilterToolbar 
             searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            tags={allTags}
+            setSearchQuery={setSearchQuery}
+            allTags={allTags}
             selectedTags={selectedTags}
-            onToggleTag={handleToggleTag}
-            onClearTags={() => setSelectedTags([])}
+            toggleTag={handleToggleTag}
           />
           
           <MainContent>
@@ -189,6 +196,7 @@ function App() {
                     key={note.id} 
                     note={note} 
                     onDelete={deleteNote}
+                    onToggleTag={handleToggleTag}
                     onClick={() => {
                       setEditingNote(note);
                       setIsModalOpen(true);

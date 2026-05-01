@@ -185,6 +185,9 @@ export const Login: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <img src="/favicon.svg" alt="Knot Logo" width="64" height="64" />
+        </div>
         <Title>Knot</Title>
         <Subtitle>{isLogin ? 'Welcome back!' : 'Create your account'}</Subtitle>
 

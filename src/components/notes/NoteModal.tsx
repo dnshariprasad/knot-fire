@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { 
-  X, Plus, Trash2, Tag as TagIcon, Layout, Type, 
-  PlusCircle, MoreVertical, Share2, Edit2, ExternalLink, MapPin, Hash, Calendar 
+  X, Type, Layout, Tag as TagIcon, PlusCircle, Trash2, 
+  Calendar, MapPin, Share2, MoreVertical, Edit2, Plus, 
+  ExternalLink, User as UserIcon, Lock as LockIcon,
+  Eye, EyeOff, Hash
 } from 'lucide-react';
-import type { Note, CustomField } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import type { Note, CustomField } from '../../types';
 
 const Overlay = styled(motion.div)`
   position: fixed;
@@ -15,39 +17,38 @@ const Overlay = styled(motion.div)`
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  padding: 1rem;
+  padding: 1.5rem;
 `;
 
 const Modal = styled(motion.div)`
   background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius.xl};
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
-  border-radius: ${({ theme }) => theme.borderRadius.xl};
-  border: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   box-shadow: ${({ theme }) => theme.shadows.lg};
+  overflow: hidden;
 `;
 
 const Header = styled.div`
-  padding: 1rem 1.5rem;
+  padding: 1.25rem 1.5rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 64px;
 `;
 
 const Title = styled.h2`
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 800;
   color: ${({ theme }) => theme.colors.text};
 `;
 
@@ -66,39 +67,99 @@ const FormGroup = styled.div`
 `;
 
 const Label = styled.label`
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 700;
   color: ${({ theme }) => theme.colors.textMuted};
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 `;
 
 const Input = styled.input`
+  width: 100%;
   background: ${({ theme }) => theme.colors.surfaceLight};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   padding: 0.75rem 1rem;
   color: ${({ theme }) => theme.colors.text};
   font-size: 1rem;
+  transition: all 0.2s ease;
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.surface};
   }
 `;
 
 const TextArea = styled.textarea`
+  width: 100%;
+  min-height: 150px;
   background: ${({ theme }) => theme.colors.surfaceLight};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  padding: 0.75rem 1rem;
+  padding: 1rem;
   color: ${({ theme }) => theme.colors.text};
   font-size: 1rem;
-  min-height: 120px;
+  line-height: 1.6;
   resize: vertical;
+  transition: all 0.2s ease;
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.surface};
+  }
+`;
+
+const TagInputWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.625rem;
+  background: ${({ theme }) => theme.colors.surfaceLight};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  min-height: 42px;
+  align-items: center;
+
+  &:focus-within {
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const TagInput = styled.input`
+  flex: 1;
+  min-width: 120px;
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.875rem;
+  outline: none;
+  padding: 0.25rem 0;
+`;
+
+const Chip = styled.span`
+  background: ${({ theme }) => theme.colors.primary};
+  color: white;
+  padding: 0.25rem 0.625rem;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  button {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    opacity: 0.7;
+    &:hover { opacity: 1; }
   }
 `;
 
@@ -112,27 +173,35 @@ const FieldRow = styled.div`
   display: flex;
   gap: 0.75rem;
   align-items: center;
-
-  @media (max-width: 480px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 `;
 
-const IconButton = styled.button<{ $variant?: 'danger' | 'primary' }>`
-  background: transparent;
-  color: ${({ theme, $variant }) => $variant === 'danger' ? theme.colors.error : theme.colors.textMuted};
+const IconButton = styled.button<{ $variant?: 'primary' | 'danger' | 'outline' }>`
+  background: ${({ theme, $variant }) => 
+    $variant === 'primary' ? theme.colors.primary : 
+    $variant === 'danger' ? theme.colors.error + '15' : 
+    'transparent'};
+  color: ${({ theme, $variant }) => 
+    $variant === 'primary' ? 'white' : 
+    $variant === 'danger' ? theme.colors.error : 
+    theme.colors.textMuted};
   padding: 0.5rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  cursor: pointer;
+  transition: all 0.2s ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.surfaceLight};
-    color: ${({ theme, $variant }) => $variant === 'danger' ? theme.colors.error : theme.colors.primary};
+    background: ${({ theme, $variant }) => 
+      $variant === 'primary' ? theme.colors.primaryDark : 
+      $variant === 'danger' ? theme.colors.error + '25' : 
+      theme.colors.surfaceLight};
+    color: ${({ theme, $variant }) => 
+      $variant === 'primary' ? 'white' : 
+      $variant === 'danger' ? theme.colors.error : 
+      theme.colors.text};
   }
 `;
 
@@ -140,75 +209,99 @@ const Footer = styled.div`
   padding: 1.25rem 1.5rem;
   border-top: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 1rem;
 `;
 
-const Button = styled.button<{ $variant?: 'outline' | 'primary' | 'danger' }>`
+const Timestamp = styled.div`
+  font-size: 0.75rem;
+  color: ${({ theme }) => theme.colors.textMuted};
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+`;
+
+const Button = styled.button<{ $variant?: 'primary' | 'outline' | 'danger' }>`
   padding: 0.625rem 1.25rem;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   font-weight: 600;
-  background: ${({ theme, $variant }) => $variant === 'primary' ? theme.colors.primary : 'transparent'};
-  color: ${({ theme, $variant }) => {
-    if ($variant === 'primary') return 'white';
-    if ($variant === 'danger') return theme.colors.error;
-    return theme.colors.text;
-  }};
-  border: ${({ theme, $variant }) => {
-    if ($variant === 'outline') return `1px solid ${theme.colors.border}`;
-    if ($variant === 'danger') return `1px solid ${theme.colors.error}33`;
-    return 'none';
-  }};
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  cursor: pointer;
+  border: none;
 
-  &:hover {
-    background: ${({ theme, $variant }) => {
-      if ($variant === 'primary') return theme.colors.primaryDark;
-      if ($variant === 'danger') return `${theme.colors.error}15`;
-      return theme.colors.surfaceLight;
-    }};
-  }
+  ${({ $variant, theme }) => {
+    if ($variant === 'primary') return `
+      background: ${theme.colors.primary};
+      color: white;
+      &:hover { background: ${theme.colors.primaryDark}; }
+    `;
+    if ($variant === 'outline') return `
+      background: transparent;
+      border: 1px solid ${theme.colors.border};
+      color: ${theme.colors.text};
+      &:hover { 
+        background: ${theme.colors.surfaceLight};
+        border-color: ${theme.colors.primary};
+      }
+    `;
+    return '';
+  }}
 `;
 
 const ViewContent = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
+`;
+
+const ViewHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 `;
 
 const ViewTitle = styled.h1`
   font-size: 1.75rem;
   font-weight: 800;
   color: ${({ theme }) => theme.colors.text};
-  margin-bottom: 0.5rem;
 `;
 
-const ViewDescription = styled.div`
+const ViewBody = styled.p`
   font-size: 1.125rem;
+  line-height: 1.7;
   color: ${({ theme }) => theme.colors.text};
   white-space: pre-wrap;
-  line-height: 1.6;
 `;
 
-const TagCloud = styled.div`
+const ViewTags = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.625rem;
 `;
 
 const TagChip = styled.span`
-  background: ${({ theme }) => theme.colors.surfaceLight};
-  color: ${({ theme }) => theme.colors.primary};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.text};
   padding: 0.25rem 0.75rem;
-  border-radius: ${({ theme }) => theme.borderRadius.full};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   font-size: 0.875rem;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.surfaceLight};
+  }
 `;
 
 const CustomFieldDisplay = styled.div`
@@ -245,6 +338,9 @@ const FieldValue = styled.div`
   a {
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
     &:hover { text-decoration: underline; }
   }
 `;
@@ -294,30 +390,50 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
   
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [tags, setTags] = useState('');
+  const [tagList, setTagList] = useState<string[]>([]);
+  const [tagInputValue, setTagInputValue] = useState('');
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [revealedFields, setRevealedFields] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     if (note) {
       setTitle(note.title);
       setContent(note.content);
-      setTags(note.tags.join(', '));
-      setCustomFields(note.customFields);
-      setIsEditing(false);
+      setTagList(note.tags || []);
+      setCustomFields(note.customFields || []);
     } else {
       setTitle('');
       setContent('');
-      setTags('');
+      setTagList([]);
       setCustomFields([]);
-      setIsEditing(true);
     }
+    setRevealedFields({});
+    setIsEditing(!note);
   }, [note]);
 
+  const handleAddTag = (_e?: React.KeyboardEvent | React.FocusEvent) => {
+    const val = tagInputValue.trim().toLowerCase();
+    if (val && !tagList.includes(val)) {
+      setTagList([...tagList, val]);
+      setTagInputValue('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTagList(tagList.filter(t => t !== tagToRemove));
+  };
+
   const handleSave = () => {
+    const currentTags = [...tagList];
+    const finalVal = tagInputValue.trim().toLowerCase();
+    if (finalVal && !currentTags.includes(finalVal)) {
+      currentTags.push(finalVal);
+    }
+
     onSave({
       title,
       content,
-      tags: tags.split(',').map(t => t.trim()).filter(t => t !== ''),
+      tags: currentTags,
       customFields: customFields.filter(f => f.label.trim() !== ''),
     });
   };
@@ -342,26 +458,6 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
       }
     }
     setShowMore(false);
-  };
-
-  const getDateStatus = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return null;
-      
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      date.setHours(0, 0, 0, 0);
-      
-      const diffTime = date.getTime() - now.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (diffDays === 0) return { label: 'Today', color: '#10b981' };
-      if (diffDays < 0) return { label: `${Math.abs(diffDays)}d ago`, color: '#ef4444' };
-      return { label: `In ${diffDays}d`, color: '#6366f1' };
-    } catch {
-      return null;
-    }
   };
 
   const isUrl = (text: string) => text.startsWith('http://') || text.startsWith('https://');
@@ -433,12 +529,30 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                 </FormGroup>
 
                 <FormGroup>
-                  <Label><TagIcon size={14} /> Tags (comma separated)</Label>
-                  <Input 
-                    placeholder="work, personal, ideas..." 
-                    value={tags}
-                    onChange={(e) => setTags(e.target.value)}
-                  />
+                  <Label><TagIcon size={14} /> Tags</Label>
+                  <TagInputWrapper onClick={() => document.getElementById('tag-input')?.focus()}>
+                    {tagList.map(tag => (
+                      <Chip key={tag}>
+                        # {tag}
+                        <button type="button" onClick={() => handleRemoveTag(tag)}>
+                          <X size={14} />
+                        </button>
+                      </Chip>
+                    ))}
+                    <TagInput 
+                      id="tag-input"
+                      placeholder="Add tag..." 
+                      value={tagInputValue}
+                      onChange={(e) => setTagInputValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ',') {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                      onBlur={() => handleAddTag()}
+                    />
+                  </TagInputWrapper>
                 </FormGroup>
 
                 <DynamicFieldsSection>
@@ -449,25 +563,25 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                         type="button"
                         $variant="outline" 
                         style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                        onClick={() => setCustomFields([...customFields, { label: 'ID', value: '' }])}
+                      >
+                        + ID
+                      </Button>
+                      <Button 
+                        type="button"
+                        $variant="outline" 
+                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                        onClick={() => setCustomFields([...customFields, { label: 'Password', value: '' }])}
+                      >
+                        + Pass
+                      </Button>
+                      <Button 
+                        type="button"
+                        $variant="outline" 
+                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
                         onClick={() => setCustomFields([...customFields, { label: 'Link', value: '' }])}
                       >
                         + Link
-                      </Button>
-                      <Button 
-                        type="button"
-                        $variant="outline" 
-                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
-                        onClick={() => setCustomFields([...customFields, { label: 'Location', value: '' }])}
-                      >
-                        + Location
-                      </Button>
-                      <Button 
-                        type="button"
-                        $variant="outline" 
-                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
-                        onClick={() => setCustomFields([...customFields, { label: 'Date', value: new Date().toISOString().split('T')[0] }])}
-                      >
-                        + Date
                       </Button>
                       <IconButton onClick={() => setCustomFields([...customFields, { label: '', value: '' }])} $variant="primary">
                         <Plus size={16} />
@@ -490,7 +604,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                       <Input 
                         placeholder="Value" 
                         value={field.value}
-                        type={field.label.toLowerCase() === 'date' ? 'date' : 'text'}
+                        type={field.label.toLowerCase().includes('pass') ? 'password' : field.label.toLowerCase().includes('date') ? 'date' : 'text'}
                         style={{ flex: 2 }}
                         onChange={(e) => {
                           const updated = [...customFields];
@@ -507,77 +621,68 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
               </>
             ) : (
               <ViewContent>
-                <div>
+                <ViewHeader>
                   <ViewTitle>{title}</ViewTitle>
-                  <TagCloud>
-                    {note?.tags.map(tag => (
-                      <TagChip key={tag}><Hash size={12} /> {tag}</TagChip>
-                    ))}
-                  </TagCloud>
-                </div>
+                  {tagList.length > 0 && (
+                    <ViewTags>
+                      {tagList.map((tag, tIdx) => (
+                        <TagChip key={`${tag}-${tIdx}`}>
+                          <Hash size={14} /> {tag}
+                        </TagChip>
+                      ))}
+                    </ViewTags>
+                  )}
+                </ViewHeader>
 
-                <ViewDescription>{content}</ViewDescription>
+                <ViewBody>{content}</ViewBody>
 
                 {customFields.length > 0 && (
                   <CustomFieldDisplay>
-                    {customFields.map((field, idx) => {
-                      const isDate = field.label.toLowerCase().includes('date');
-                      const status = isDate ? getDateStatus(field.value) : null;
-                      
-                      return (
-                        <FieldCard key={idx}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <FieldLabel>{field.label}</FieldLabel>
-                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                              {status && (
-                                <span style={{ 
-                                  fontSize: '0.625rem', 
-                                  fontWeight: 800, 
-                                  padding: '0.125rem 0.375rem', 
-                                  borderRadius: '4px',
-                                  background: `${status.color}20`,
-                                  color: status.color,
-                                  textTransform: 'uppercase'
-                                }}>
-                                  {status.label}
-                                </span>
-                              )}
-                              <IconButton 
-                                onClick={async () => {
-                                  try {
-                                    if (navigator.share) {
-                                      await navigator.share({ title: field.label, text: field.value });
-                                    } else {
-                                      await navigator.clipboard.writeText(field.value);
-                                      toast.success(`${field.label} copied!`);
-                                    }
-                                  } catch (err) {
-                                    if (err instanceof Error && err.name !== 'AbortError') {
-                                      toast.error('Sharing failed');
-                                    }
-                                  }
-                                }}
-                                style={{ padding: '0.25rem' }}
-                                title={`Share ${field.label}`}
-                              >
-                                <Share2 size={12} />
-                              </IconButton>
-                            </div>
-                          </div>
-                          <FieldValue>
-                            {field.label.toLowerCase().includes('location') && <MapPin size={14} color="#94a3b8" />}
-                            {isDate && <Calendar size={14} color="#94a3b8" />}
-                            {isUrl(field.value) ? (
-                              <a href={field.value} target="_blank" rel="noopener noreferrer">
-                                {field.value} <ExternalLink size={12} />
-                              </a>
-                            ) : (
-                              field.value
-                            )}
-                          </FieldValue>
-                        </FieldCard>
-                      );
-                    })}
+                    {customFields.map((field, idx) => (
+                      <FieldCard key={idx}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <FieldLabel>{field.label}</FieldLabel>
+                          <IconButton 
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(field.value);
+                                toast.success(`${field.label} copied!`);
+                              } catch (err) {
+                                toast.error('Failed to copy');
+                              }
+                            }}
+                            style={{ padding: '0.25rem' }}
+                          >
+                            <Share2 size={12} />
+                          </IconButton>
+                        </div>
+                        <FieldValue>
+                          {field.label.toLowerCase().includes('location') && <MapPin size={14} color="#94a3b8" />}
+                          {field.label.toLowerCase().includes('id') && <UserIcon size={14} color="#94a3b8" />}
+                          {field.label.toLowerCase().includes('pass') && <LockIcon size={14} color="#94a3b8" />}
+                          {(field.label.toLowerCase().includes('date') || field.label.toLowerCase().includes('dob')) && <Calendar size={14} color="#94a3b8" />}
+                          
+                          {field.label.toLowerCase().includes('pass') && !revealedFields[idx] ? (
+                            '••••••••'
+                          ) : isUrl(field.value) ? (
+                            <a href={field.value} target="_blank" rel="noopener noreferrer">
+                              {field.value} <ExternalLink size={12} />
+                            </a>
+                          ) : (
+                            field.value
+                          )}
+                          
+                          {field.label.toLowerCase().includes('pass') && (
+                            <IconButton 
+                              onClick={() => setRevealedFields(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                              style={{ padding: '0.25rem', marginLeft: 'auto' }}
+                            >
+                              {revealedFields[idx] ? <EyeOff size={14} /> : <Eye size={14} />}
+                            </IconButton>
+                          )}
+                        </FieldValue>
+                      </FieldCard>
+                    ))}
                   </CustomFieldDisplay>
                 )}
               </ViewContent>
@@ -585,16 +690,27 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
           </Body>
 
           <Footer>
-            {isEditing ? (
-              <>
-                <Button $variant="outline" onClick={() => note ? setIsEditing(false) : onClose()}>Cancel</Button>
-                <Button $variant="primary" onClick={handleSave}>Save Changes</Button>
-              </>
-            ) : (
-              <Button $variant="primary" onClick={() => setIsEditing(true)}>
-                <Edit2 size={18} /> Edit Note
-              </Button>
+            {note && (
+              <Timestamp title="Created Date">
+                <Calendar size={14} />
+                {new Date(note.createdAt).toLocaleString(undefined, {
+                  dateStyle: 'medium',
+                  timeStyle: 'short'
+                })}
+              </Timestamp>
             )}
+            <div style={{ display: 'flex', gap: '1rem', marginLeft: 'auto' }}>
+              {isEditing ? (
+                <>
+                  <Button $variant="outline" onClick={() => note ? setIsEditing(false) : onClose()}>Cancel</Button>
+                  <Button $variant="primary" onClick={handleSave}>Save Changes</Button>
+                </>
+              ) : (
+                <Button $variant="primary" onClick={() => setIsEditing(true)}>
+                  <Edit2 size={18} /> Edit Note
+                </Button>
+              )}
+            </div>
           </Footer>
         </Modal>
       </Overlay>
