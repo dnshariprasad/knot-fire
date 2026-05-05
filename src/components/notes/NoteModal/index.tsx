@@ -317,7 +317,14 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
               </motion.div>
             )}
           </S.FormGroup>
-          <S.Button $variant="primary" onClick={handleSave} style={{ height: '48px' }}>{t('notes.saveChanges')}</S.Button>
+          <S.StickyFooter>
+            <S.Button $variant="outline" onClick={onClose} style={{ flex: 1, height: '48px' }}>
+              {t('common.cancel')}
+            </S.Button>
+            <S.Button $variant="primary" onClick={handleSave} style={{ flex: 2, height: '48px' }}>
+              {t('notes.saveChanges')}
+            </S.Button>
+          </S.StickyFooter>
         </div>
       ) : (
         <S.ViewContent>

@@ -298,7 +298,22 @@ export const FieldDivider = styled.div`
   width: 100%;
   height: 1px;
   background: ${({ theme }) => theme.colors.border};
-  opacity: 0.5;
+  opacity: 0.3;
+`;
+
+export const StickyFooter = styled.div`
+  position: sticky;
+  bottom: -1.5rem; /* Match Modal Body padding */
+  left: -1.5rem;
+  right: -1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: ${({ theme }) => theme.colors.surface};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  display: flex;
+  gap: 0.75rem;
+  margin: 1.5rem -1.5rem -1.5rem -1.5rem;
+  z-index: 10;
+  backdrop-filter: blur(8px);
 `;
 
 export const IconButton = styled.button<{ $variant?: 'primary' | 'danger' | 'outline' }>`
