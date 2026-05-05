@@ -20,7 +20,7 @@
     "or": "OR"
   },
   "app": {
-    "title": "Knot Notes",
+    "title": "Knot",
     "newNote": "New Note",
     "emptyState": "Start by creating your first note!",
     "noMatch": "No notes match your filters.",
@@ -100,7 +100,7 @@
     "enableEncryptionButton": "Enable End-to-End Encryption",
     "whatIsE2ee": "What is E2EE?",
     "e2eeDescription": "End-to-End Encryption ensures that your notes are \"locked\" on your device before being sent to our servers. Not even the app developers can read your notes.",
-    "lockTitle": "Securing your Knot",
+    "lockTitle": "Securing Knot",
     "lockDescription": "Your data is protected by AES-256 bit encryption. Enter your Master Key to continue.",
     "unlockData": "Unlock Data",
     "proceedWithoutEncryption": "Proceed without encryption",

@@ -17,6 +17,7 @@ import { useTheme } from './styles/ThemeContext';
 import { useCrypto } from './context/CryptoContext';
 import { LockScreen } from './components/layout/LockScreen';
 import { SettingsModal } from './components/layout/SettingsModal';
+import { FAB } from './components/layout/FAB';
 
 const AppContainer = styled.div`
   background: ${({ theme }) => theme.colors.background};
@@ -235,6 +236,13 @@ function App() {
           {isSettingsOpen && (
             <SettingsModal onClose={() => setIsSettingsOpen(false)} />
           )}
+
+          <FAB 
+            onClick={() => {
+              setEditingNote(null);
+              setIsModalOpen(true);
+            }} 
+          />
 
           <Toaster 
             position="bottom-right"

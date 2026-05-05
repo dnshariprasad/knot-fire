@@ -48,16 +48,25 @@ export const RightSection = styled.div`
 `;
 
 export const AddButton = styled.button`
-  background: ${({ theme }) => theme.colors.primary};
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  background: ${({ theme }) => theme.colors.primary};
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
   border: none;
+  font-weight: 700;
+  font-size: 0.875rem;
   cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px ${({ theme }) => theme.colors.primary + '30'};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryDark};
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px ${({ theme }) => theme.colors.primary + '50'};
+  }
 
   span {
     @media (max-width: 640px) {
@@ -65,7 +74,7 @@ export const AddButton = styled.button`
     }
   }
 
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryDark};
+  @media (max-width: 640px) {
+    padding: 0.625rem;
   }
 `;
