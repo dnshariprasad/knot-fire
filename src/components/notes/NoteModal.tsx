@@ -23,6 +23,11 @@ const Overlay = styled(motion.div)`
   justify-content: center;
   z-index: 2000;
   padding: 1.5rem;
+
+  @media (max-width: 768px) {
+    align-items: flex-end;
+    padding: 0;
+  }
 `;
 
 const Modal = styled(motion.div)`
@@ -36,6 +41,14 @@ const Modal = styled(motion.div)`
   flex-direction: column;
   box-shadow: ${({ theme }) => theme.shadows.lg};
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    border-radius: ${({ theme }) => theme.borderRadius.xl} ${({ theme }) => theme.borderRadius.xl} 0 0;
+    max-height: 95vh;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+  }
 `;
 
 const Header = styled.div`
@@ -622,9 +635,10 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
         onClick={onClose}
       >
         <Modal
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 100 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
         >
           <Header>
