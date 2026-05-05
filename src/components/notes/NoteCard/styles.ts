@@ -168,6 +168,13 @@ export const FieldItem = styled.div`
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+
+    a {
+      &:hover {
+        color: ${({ theme }) => theme.colors.primary} !important;
+        text-decoration: underline !important;
+      }
+    }
   }
 `;
 

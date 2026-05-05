@@ -63,7 +63,21 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag }
             <S.FieldItem key={idx}>
               {getFieldIcon(field.label)}
               <span>
-                {field.label.toLowerCase().includes('pass') ? '••••••••' : field.value}
+                {field.label.toLowerCase().includes('pass') ? (
+                  '••••••••'
+                ) : field.value.startsWith('http') ? (
+                  <a 
+                    href={field.value} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ color: 'inherit', textDecoration: 'none' }}
+                  >
+                    {field.value}
+                  </a>
+                ) : (
+                  field.value
+                )}
               </span>
               {field.value.startsWith('http') && <ExternalLink size={10} style={{ opacity: 0.5 }} />}
             </S.FieldItem>
