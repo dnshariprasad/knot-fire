@@ -1,3 +1,4 @@
+// Force refresh: 1777998981408
 import { useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { Plus, Loader2 } from 'lucide-react';
@@ -10,10 +11,12 @@ import { NoteModal } from './components/notes/NoteModal';
 import type { Note } from './types';
 import { FilterToolbar } from './components/filters/FilterToolbar';
 import { Toaster } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { GlobalStyles } from './styles/GlobalStyles';
 import { useTheme } from './styles/ThemeContext';
-import { useCrypto, LockScreen } from './context/CryptoContext';
-import { SecurityModal } from './components/layout/SecurityModal';
+import { useCrypto } from './context/CryptoContext';
+import { LockScreen } from './components/layout/LockScreen';
+import { SettingsModal } from './components/layout/SettingsModal';
 
 const AppContainer = styled.div`
   background: ${({ theme }) => theme.colors.background};
@@ -84,20 +87,21 @@ const AddButton = styled.button`
 `;
 
 function App() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { notes, loading: notesLoading, addNote, updateNote, deleteNote } = useNotes();
   const { themeMode, toggleTheme, currentTheme } = useTheme();
-  const { masterKey, setSkipped, isSkipped } = useCrypto();
+  const { masterKey, setKey, setSkipped, isSkipped } = useCrypto();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
 
-  const handleToggleTag = (tag: string) => {
+  const handleToggleTag = (targetTag: string) => {
     setSelectedTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+      prev.includes(targetTag) ? prev.filter(t => t !== targetTag) : [...prev, targetTag]
     );
   };
 
@@ -109,16 +113,16 @@ function App() {
         await addNote(noteData as any);
       }
       setIsModalOpen(false);
-    } catch (error) {
-      console.error("Save Error:", error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
-    notes.forEach(note => {
-      note.tags.forEach(tag => tags.add(tag));
-      note.customFields.forEach(field => {
+    notes.forEach(noteItem => {
+      noteItem.tags.forEach(t => tags.add(t));
+      noteItem.customFields.forEach(field => {
         if (field.label.trim()) tags.add(field.label.trim());
       });
     });
@@ -126,14 +130,14 @@ function App() {
   }, [notes]);
 
   const filteredNotes = useMemo(() => {
-    return notes.filter(note => {
-      const matchesSearch = note.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           note.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                           note.customFields.some(f => f.value.toLowerCase().includes(searchQuery.toLowerCase()));
+    return notes.filter(noteItem => {
+      const matchesSearch = noteItem.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           noteItem.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           noteItem.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                           noteItem.customFields.some(f => f.value.toLowerCase().includes(searchQuery.toLowerCase()));
       
       const matchesTags = selectedTags.length === 0 || 
-                         selectedTags.every(tag => note.tags.includes(tag) || note.customFields.some(f => f.label === tag));
+                         selectedTags.every(t => noteItem.tags.includes(t) || noteItem.customFields.some(f => f.label === t));
       
       return matchesSearch && matchesTags;
     });
@@ -147,7 +151,7 @@ function App() {
     return (
       <>
         <GlobalStyles />
-        <LockScreen onSkip={() => setSkipped(true)} />
+        <LockScreen onUnlock={setKey} onSkip={() => setSkipped(true)} />
       </>
     );
   }
@@ -165,7 +169,7 @@ function App() {
               setIsModalOpen(true);
             }}
             onThemeToggle={toggleTheme}
-            onSecurityClick={() => setIsSecurityOpen(true)}
+            onSettingsClick={() => setIsSettingsOpen(true)}
             themeMode={themeMode}
           />
 
@@ -180,10 +184,10 @@ function App() {
           <MainContent>
             {!notesLoading && filteredNotes.length === 0 && (
                <EmptyState>
-                 <p>{searchQuery || selectedTags.length > 0 ? "No notes match your filters." : "Start by creating your first note!"}</p>
+                 <p>{searchQuery || selectedTags.length > 0 ? t('app.noMatch') : t('app.emptyState')}</p>
                  {!searchQuery && selectedTags.length === 0 && (
                    <AddButton onClick={() => setIsModalOpen(true)} style={{ marginTop: '1rem' }}>
-                      <Plus size={18} /> New Note
+                      <Plus size={18} /> {t('app.newNote')}
                    </AddButton>
                  )}
                </EmptyState>
@@ -192,7 +196,7 @@ function App() {
             {notesLoading ? (
               <EmptyState>
                 <Loader2 size={32} className="animate-spin" color={currentTheme.colors.primary} />
-                <p>Loading your notes...</p>
+                <p>{t('app.loadingNotes')}</p>
               </EmptyState>
             ) : (
               <NotesGrid>
@@ -213,7 +217,7 @@ function App() {
           </MainContent>
 
           <Footer>
-            &copy; {new Date().getFullYear()} Knot Notes. All rights reserved.
+            &copy; {new Date().getFullYear()} {t('app.title')}. {t('common.allRightsReserved')}
           </Footer>
 
           {isModalOpen && (
@@ -228,8 +232,8 @@ function App() {
             />
           )}
 
-          {isSecurityOpen && (
-            <SecurityModal onClose={() => setIsSecurityOpen(false)} />
+          {isSettingsOpen && (
+            <SettingsModal onClose={() => setIsSettingsOpen(false)} />
           )}
 
           <Toaster 

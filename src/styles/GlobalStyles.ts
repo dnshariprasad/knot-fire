@@ -7,13 +7,31 @@ export const GlobalStyles = createGlobalStyle`
     box-sizing: border-box;
   }
 
+  :root {
+    color-scheme: light dark;
+  }
+
   body {
-    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: ${({ theme }) => theme.typography.fontFamily.sans};
     background-color: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.text};
     line-height: 1.5;
+    letter-spacing: 0.18px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  #root {
+    width: 100%;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 500;
+    color: ${({ theme }) => theme.colors.text};
   }
 
   button {
@@ -22,11 +40,19 @@ export const GlobalStyles = createGlobalStyle`
     outline: none;
     font-family: inherit;
     transition: all 0.2s ease;
+    background: transparent;
   }
 
   input, textarea {
     font-family: inherit;
     outline: none;
+    border: none;
+    background: transparent;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
   }
 
   /* Custom Scrollbar */

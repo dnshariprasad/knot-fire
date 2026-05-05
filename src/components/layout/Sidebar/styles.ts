@@ -1,7 +1,6 @@
-import React from 'react';
 import styled from 'styled-components';
 
-const SidebarContainer = styled.aside<{ $isOpen: boolean }>`
+export const SidebarContainer = styled.aside<{ $isOpen: boolean }>`
   width: 280px;
   background: ${({ theme }) => theme.colors.surface};
   border-right: 1px solid ${({ theme }) => theme.colors.border};
@@ -17,15 +16,3 @@ const SidebarContainer = styled.aside<{ $isOpen: boolean }>`
     z-index: 100;
   }
 `;
-
-interface SidebarProps {
-  isOpen: boolean;
-}
-
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
-  return (
-    <SidebarContainer $isOpen={isOpen}>
-      {/* Sidebar content removed per user request */}
-    </SidebarContainer>
-  );
-};

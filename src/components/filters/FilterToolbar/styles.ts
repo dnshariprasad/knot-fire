@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from 'react';
 import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Search } from 'lucide-react';
 
-const ToolbarContainer = styled.div`
+export const ToolbarContainer = styled.div`
   display: flex;
   flex-direction: column;
   background: transparent;
@@ -14,18 +13,18 @@ const ToolbarContainer = styled.div`
   margin: 0 auto;
 `;
 
-const SearchRow = styled.div`
+export const SearchRow = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
 `;
 
-const SearchWrapper = styled.div`
+export const SearchWrapper = styled.div`
   flex: 1;
   position: relative;
 `;
 
-const SearchInput = styled.input`
+export const SearchInput = styled.input`
   width: 100%;
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -41,7 +40,7 @@ const SearchInput = styled.input`
   }
 `;
 
-const SearchIcon = styled(Search)`
+export const SearchIcon = styled(Search)`
   position: absolute;
   left: 0.875rem;
   top: 50%;
@@ -49,7 +48,7 @@ const SearchIcon = styled(Search)`
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
-const FilterButton = styled.button<{ $active?: boolean }>`
+export const FilterButton = styled.button<{ $active?: boolean }>`
   position: absolute;
   right: 0.5rem;
   top: 50%;
@@ -71,14 +70,14 @@ const FilterButton = styled.button<{ $active?: boolean }>`
   }
 `;
 
-const SelectedTagsRow = styled.div`
+export const SelectedTagsRow = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0.25rem 0;
 `;
 
-const TagChip = styled.button<{ $active?: boolean }>`
+export const TagChip = styled.button<{ $active?: boolean }>`
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -98,7 +97,7 @@ const TagChip = styled.button<{ $active?: boolean }>`
   }
 `;
 
-const Overlay = styled(motion.div)`
+export const Overlay = styled(motion.div)`
   position: fixed;
   top: 0;
   left: 0;
@@ -109,7 +108,7 @@ const Overlay = styled(motion.div)`
   z-index: 2000;
 `;
 
-const BottomSheet = styled(motion.div)`
+export const BottomSheet = styled(motion.div)`
   position: fixed;
   bottom: 0;
   left: 0;
@@ -130,7 +129,7 @@ const BottomSheet = styled(motion.div)`
   }
 `;
 
-const SheetHandle = styled.div`
+export const SheetHandle = styled.div`
   width: 40px;
   height: 4px;
   background: ${({ theme }) => theme.colors.border};
@@ -139,7 +138,7 @@ const SheetHandle = styled.div`
   flex-shrink: 0;
 `;
 
-const SheetHeader = styled.div`
+export const SheetHeader = styled.div`
   padding: 0 1.5rem 1.25rem 1.5rem;
   display: flex;
   justify-content: space-between;
@@ -152,7 +151,7 @@ const SheetHeader = styled.div`
   }
 `;
 
-const SheetBody = styled.div`
+export const SheetBody = styled.div`
   padding: 0 1.5rem 2rem 1.5rem;
   overflow-y: auto;
   display: flex;
@@ -160,13 +159,13 @@ const SheetBody = styled.div`
   gap: 1.5rem;
 `;
 
-const TagGrid = styled.div`
+export const TagGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 0.75rem;
 `;
 
-const TagItem = styled.button<{ $selected: boolean }>`
+export const TagItem = styled.button<{ $selected: boolean }>`
   padding: 0.75rem 1rem;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   background: ${({ theme, $selected }) => $selected ? theme.colors.primary : theme.colors.surfaceLight};
@@ -187,7 +186,7 @@ const TagItem = styled.button<{ $selected: boolean }>`
   }
 `;
 
-const IconButton = styled.button`
+export const IconButton = styled.button`
   background: ${({ theme }) => theme.colors.surfaceLight};
   color: ${({ theme }) => theme.colors.textMuted};
   padding: 0.5rem;
@@ -204,7 +203,7 @@ const IconButton = styled.button`
   }
 `;
 
-const TagSearchInput = styled.div`
+export const TagSearchInput = styled.div`
   position: relative;
   
   input {
@@ -233,138 +232,3 @@ const TagSearchInput = styled.div`
     color: ${({ theme }) => theme.colors.textMuted};
   }
 `;
-
-interface FilterToolbarProps {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  selectedTags: string[];
-  toggleTag: (tag: string) => void;
-  allTags: string[];
-}
-
-export const FilterToolbar: React.FC<FilterToolbarProps> = ({
-  searchQuery,
-  setSearchQuery,
-  selectedTags,
-  toggleTag,
-  allTags,
-}) => {
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [tagSearch, setTagSearch] = useState('');
-
-  const filteredTags = useMemo(() => {
-    const uniqueTags = Array.from(new Set(allTags));
-    if (!tagSearch.trim()) return uniqueTags.sort();
-    return uniqueTags
-      .filter(tag => tag.toLowerCase().includes(tagSearch.toLowerCase()))
-      .sort();
-  }, [allTags, tagSearch]);
-
-  return (
-    <ToolbarContainer>
-      <SearchRow>
-        <SearchWrapper>
-          <SearchIcon size={18} />
-          <SearchInput
-            placeholder="Search notes, links, location..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <FilterButton 
-            $active={selectedTags.length > 0} 
-            onClick={() => setIsSheetOpen(true)}
-            title="Filter by tags"
-          >
-            <SlidersHorizontal size={18} />
-          </FilterButton>
-        </SearchWrapper>
-      </SearchRow>
-
-      <AnimatePresence>
-        {selectedTags.length > 0 && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            style={{ overflow: 'hidden' }}
-          >
-            <SelectedTagsRow>
-              {selectedTags.map((tag) => (
-                <TagChip key={tag} $active onClick={() => toggleTag(tag)}>
-                  <X size={12} />
-                  {tag}
-                </TagChip>
-              ))}
-              <TagChip onClick={() => selectedTags.forEach(t => toggleTag(t))}>
-                Clear All
-              </TagChip>
-            </SelectedTagsRow>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isSheetOpen && (
-          <>
-            <Overlay
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsSheetOpen(false)}
-            />
-            <BottomSheet
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <SheetHandle />
-              <SheetHeader>
-                <h3>Explore Tags</h3>
-                <IconButton onClick={() => {
-                  setIsSheetOpen(false);
-                  setTagSearch('');
-                }}>
-                  <X size={20} />
-                </IconButton>
-              </SheetHeader>
-              <SheetBody>
-                {allTags.length > 0 && (
-                  <TagSearchInput>
-                    <Search size={18} />
-                    <input 
-                      placeholder="Find a tag..." 
-                      value={tagSearch}
-                      onChange={(e) => setTagSearch(e.target.value)}
-                      autoFocus
-                    />
-                  </TagSearchInput>
-                )}
-                
-                {filteredTags.length === 0 ? (
-                  <p style={{ textAlign: 'center', color: '#94a3b8', padding: '3rem 0' }}>
-                    {allTags.length === 0 ? "No tags found. Add tags to your notes to filter them." : "No tags match your search."}
-                  </p>
-                ) : (
-                  <TagGrid>
-                    {filteredTags.map((tag, idx) => (
-                      <TagItem
-                        key={`${tag}-${idx}`}
-                        $selected={selectedTags.includes(tag)}
-                        onClick={() => toggleTag(tag)}
-                      >
-                        {selectedTags.includes(tag) ? <X size={14} /> : '#'}
-                        {tag}
-                      </TagItem>
-                    ))}
-                  </TagGrid>
-                )}
-              </SheetBody>
-            </BottomSheet>
-          </>
-        )}
-      </AnimatePresence>
-    </ToolbarContainer>
-  );
-};

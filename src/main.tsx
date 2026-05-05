@@ -5,6 +5,7 @@ import App from './App.tsx'
 import { AuthProvider } from './context/AuthContext'
 import { CryptoProvider } from './context/CryptoContext'
 import { ThemeProvider } from './styles/ThemeContext'
+import './i18n/config'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
