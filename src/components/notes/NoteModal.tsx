@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import styled from 'styled-components';
 import { 
   X, Type, Layout, Tag as TagIcon, PlusCircle, Trash2, 
@@ -479,10 +480,7 @@ const LockIconWrapper = styled.div`
   justify-content: center;
 `;
 
-const Popover = styled.div`
-  position: absolute;
-  top: 100%;
-  right: 0;
+const Popover = styled(DropdownMenu.Content)`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
@@ -490,10 +488,18 @@ const Popover = styled.div`
   width: 160px;
   overflow: hidden;
   margin-top: 0.5rem;
-  z-index: 2100;
+  z-index: 9999;
+
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+  animation: scaleIn 0.2s ease;
+  
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
 `;
 
-const PopoverItem = styled.button<{ $danger?: boolean }>`
+const PopoverItem = styled(DropdownMenu.Item)<{ $danger?: boolean }>`
   width: 100%;
   text-align: left;
   padding: 0.75rem 1rem;
@@ -505,8 +511,9 @@ const PopoverItem = styled.button<{ $danger?: boolean }>`
   gap: 0.75rem;
   border: none;
   cursor: pointer;
+  outline: none;
 
-  &:hover {
+  &:hover, &:focus {
     background: ${({ theme }) => theme.colors.surfaceLight};
   }
 `;
@@ -520,7 +527,6 @@ interface NoteModalProps {
 
 export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onDelete }) => {
   const [isEditing, setIsEditing] = useState(!note);
-  const [showMore, setShowMore] = useState(false);
   
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -621,7 +627,6 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
         toast.error('Sharing failed');
       }
     }
-    setShowMore(false);
   };
 
   const isUrl = (text: string) => text.startsWith('http://') || text.startsWith('https://');
@@ -649,28 +654,34 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
             </Title>
             <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
               {!isEditing && isVerified && (
-                <>
-                  <IconButton onClick={() => setShowMore(!showMore)}>
-                    <MoreVertical size={20} />
-                  </IconButton>
-                  {showMore && (
-                    <Popover>
-                      <PopoverItem onClick={handleShare}>
-                        <Share2 size={16} /> Share
-                      </PopoverItem>
-                      {onDelete && note && (
-                        <PopoverItem 
-                          $danger 
-                          onClick={() => {
-                            if (window.confirm('Delete this note?')) onDelete(note.id);
-                          }}
-                        >
-                          <Trash2 size={16} /> Delete
+                <div onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                      <IconButton>
+                        <MoreVertical size={20} />
+                      </IconButton>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Portal>
+                      <Popover sideOffset={8} align="end">
+                        <PopoverItem onSelect={handleShare}>
+                          <Share2 size={16} /> Share
                         </PopoverItem>
-                      )}
-                    </Popover>
-                  )}
-                </>
+                        {onDelete && note && (
+                          <PopoverItem 
+                            $danger 
+                            onSelect={() => {
+                              if (window.confirm('Delete this note?')) {
+                                onDelete(note.id);
+                              }
+                            }}
+                          >
+                            <Trash2 size={16} /> Delete
+                          </PopoverItem>
+                        )}
+                      </Popover>
+                    </DropdownMenu.Portal>
+                  </DropdownMenu.Root>
+                </div>
               )}
               <IconButton onClick={onClose}><X size={20} /></IconButton>
             </div>
@@ -703,51 +714,6 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
               </LockView>
             ) : isEditing ? (
               <>
-                <FormGroup>
-                  <Label><Type size={14} /> Title</Label>
-                  <Input 
-                    placeholder="Note title..." 
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
-                </FormGroup>
-
-                <FormGroup>
-                  <Label><Layout size={14} /> Description</Label>
-                  <TextArea 
-                    placeholder="Write your note content here..." 
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                  />
-                </FormGroup>
-
-                <FormGroup>
-                  <Label><TagIcon size={14} /> Tags</Label>
-                  <TagInputWrapper onClick={() => document.getElementById('tag-input')?.focus()}>
-                    {tagList.map(tag => (
-                      <Chip key={tag}>
-                        # {tag}
-                        <button type="button" onClick={() => handleRemoveTag(tag)}>
-                          <X size={14} />
-                        </button>
-                      </Chip>
-                    ))}
-                    <TagInput 
-                      id="tag-input"
-                      placeholder="Add tag..." 
-                      value={tagInputValue}
-                      onChange={(e) => setTagInputValue(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ',') {
-                          e.preventDefault();
-                          handleAddTag();
-                        }
-                      }}
-                      onBlur={() => handleAddTag()}
-                    />
-                  </TagInputWrapper>
-                </FormGroup>
-
                 <DynamicFieldsSection>
                   <SectionHeader>
                     <Label style={{ margin: 0 }}><PlusCircle size={14} /> Additional Fields</Label>
@@ -803,6 +769,51 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                     </FieldRow>
                   ))}
                 </DynamicFieldsSection>
+
+                <FormGroup>
+                  <Label><Type size={14} /> Title</Label>
+                  <Input 
+                    placeholder="Note title..." 
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                </FormGroup>
+
+                <FormGroup>
+                  <Label><Layout size={14} /> Description</Label>
+                  <TextArea 
+                    placeholder="Write your note content here..." 
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                  />
+                </FormGroup>
+
+                <FormGroup>
+                  <Label><TagIcon size={14} /> Tags</Label>
+                  <TagInputWrapper onClick={() => document.getElementById('tag-input')?.focus()}>
+                    {tagList.map(tag => (
+                      <Chip key={tag}>
+                        # {tag}
+                        <button type="button" onClick={() => handleRemoveTag(tag)}>
+                          <X size={14} />
+                        </button>
+                      </Chip>
+                    ))}
+                    <TagInput 
+                      id="tag-input"
+                      placeholder="Add tag..." 
+                      value={tagInputValue}
+                      onChange={(e) => setTagInputValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ',') {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                      onBlur={() => handleAddTag()}
+                    />
+                  </TagInputWrapper>
+                </FormGroup>
 
                 <FormGroup style={{ marginTop: '1rem', padding: '1.25rem', background: '#f8fafc05', borderRadius: '12px', border: '1px solid #e2e8f010' }}>
                   <Label style={{ marginBottom: '0.5rem' }}>
@@ -914,7 +925,6 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
             <div style={{ display: 'flex', gap: '0.75rem', marginLeft: 'auto' }}>
               {isEditing ? (
                 <>
-                  <Button $variant="outline" onClick={() => note ? setIsEditing(false) : onClose()}>Cancel</Button>
                   <Button $variant="primary" onClick={handleSave}>Save Changes</Button>
                 </>
               ) : (

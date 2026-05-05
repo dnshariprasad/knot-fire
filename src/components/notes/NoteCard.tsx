@@ -1,4 +1,5 @@
 import React from 'react';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import styled from 'styled-components';
 import type { Note } from '../../types';
 import { 
@@ -65,10 +66,7 @@ const MoreButton = styled.button`
   }
 `;
 
-const Popover = styled.div`
-  position: absolute;
-  top: 100%;
-  right: 0;
+const Popover = styled(DropdownMenu.Content)`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
@@ -76,10 +74,18 @@ const Popover = styled.div`
   width: 140px;
   overflow: hidden;
   margin-top: 0.25rem;
-  z-index: 10;
+  z-index: 9999;
+  
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+  animation: scaleIn 0.2s ease;
+  
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
 `;
 
-const PopoverItem = styled.button<{ $danger?: boolean }>`
+const PopoverItem = styled(DropdownMenu.Item)<{ $danger?: boolean }>`
   width: 100%;
   text-align: left;
   padding: 0.625rem 0.875rem;
@@ -91,8 +97,9 @@ const PopoverItem = styled.button<{ $danger?: boolean }>`
   gap: 0.5rem;
   border: none;
   cursor: pointer;
+  outline: none;
 
-  &:hover {
+  &:hover, &:focus {
     background: ${({ theme }) => theme.colors.surfaceLight};
   }
 `;
@@ -209,9 +216,7 @@ interface NoteCardProps {
 }
 
 export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onDelete, onToggleTag }) => {
-  const [showMenu, setShowMenu] = React.useState(false);
-
-  const handleShare = async (e: React.MouseEvent) => {
+  const handleShare = async (e: Event) => {
     e.stopPropagation();
     if (note.isPrivate) {
       toast.error('Cannot share private notes from the dashboard. Open the note first.');
@@ -233,15 +238,13 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onDelete, onT
         toast.error('Sharing failed');
       }
     }
-    setShowMenu(false);
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
+  const handleDelete = (e: Event) => {
     e.stopPropagation();
     if (window.confirm('Delete this note?')) {
       onDelete(note.id);
     }
-    setShowMenu(false);
   };
 
   const getFieldIcon = (label: string) => {
@@ -264,20 +267,24 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onDelete, onT
     >
       <Header>
         <Title $blurred={note.isPrivate}>{note.title || 'Untitled Private Note'}</Title>
-        <div style={{ position: 'relative' }}>
-          <MoreButton onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}>
-            <MoreVertical size={16} />
-          </MoreButton>
-          {showMenu && (
-            <Popover>
-              <PopoverItem onClick={handleShare}>
-                <Share2 size={14} /> Share
-              </PopoverItem>
-              <PopoverItem $danger onClick={handleDelete}>
-                <Trash2 size={14} /> Delete
-              </PopoverItem>
-            </Popover>
-          )}
+        <div style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <MoreButton>
+                <MoreVertical size={16} />
+              </MoreButton>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <Popover sideOffset={4} align="end">
+                <PopoverItem onSelect={handleShare}>
+                  <Share2 size={14} /> Share
+                </PopoverItem>
+                <PopoverItem $danger onSelect={handleDelete}>
+                  <Trash2 size={14} /> Delete
+                </PopoverItem>
+              </Popover>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
         </div>
       </Header>
 
