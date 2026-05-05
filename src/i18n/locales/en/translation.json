@@ -44,7 +44,7 @@
   "notes.lockedTitle": "Private Note Locked",
   "notes.lockedMessage": "Enter the 4-digit PIN to reveal its content.",
   "notes.unlockNote": "Unlock Note",
-  "notes.additionalFields": "Additional Fields",
+  "notes.additionalFields": "Fields",
   "notes.fieldLabel": "Label",
   "notes.fieldValue": "Value",
   "notes.titleLabel": "Title",

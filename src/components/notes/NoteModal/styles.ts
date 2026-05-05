@@ -224,8 +224,81 @@ export const QuickActionButton = styled.button`
 
 export const FieldRow = styled(motion.div)`
   display: flex;
-  gap: 0.75rem;
-  align-items: center;
+  flex-direction: column;
+  gap: 0;
+  background: ${({ theme }) => theme.colors.surfaceLight};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  overflow: hidden;
+  position: relative;
+  transition: all 0.2s ease;
+
+  &:focus-within {
+    border-color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.surface};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primary + '20'};
+  }
+`;
+
+export const FieldInput = styled.input<{ $variant?: 'label' | 'value'; $isDate?: boolean; $isLink?: boolean }>`
+  background: transparent;
+  border: none;
+  padding: ${({ $variant, $isDate }) => {
+    if ($variant === 'label') return '0.75rem 1rem 0.25rem';
+    return $isDate ? '0.25rem 1rem 0.75rem 2.75rem' : '0.25rem 1rem 0.75rem';
+  }};
+  color: ${({ theme, $variant }) => $variant === 'label' ? theme.colors.textMuted : theme.colors.text};
+  
+  &:focus {
+    outline: none;
+  }
+  font-size: ${({ $variant, $isDate, $isLink }) => 
+    $variant === 'label' ? '0.6rem' : 
+    $isDate ? '1.25rem' : 
+    $isLink ? '0.9rem' : 
+    '1.1rem'
+  };
+  font-weight: ${({ $variant, $isLink }) => $variant === 'label' ? '800' : $isLink ? '400' : '600'};
+  font-family: ${({ $isDate, $isLink }) => ($isDate || $isLink) ? "'JetBrains Mono', monospace" : 'inherit'};
+
+  ${({ $isDate, theme }) => $isDate && `
+    &::-webkit-datetime-edit {
+      color: ${theme.colors.textMuted};
+      opacity: 0.5;
+    }
+    &:focus::-webkit-datetime-edit,
+    &:not([value=""])::-webkit-datetime-edit {
+      color: ${theme.colors.text};
+      opacity: 1;
+    }
+  `}
+
+  text-transform: ${({ $variant }) => $variant === 'label' ? 'uppercase' : 'none'};
+  letter-spacing: ${({ $variant }) => $variant === 'label' ? '0.08em' : 'normal'};
+  width: 100%;
+  outline: none;
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textMuted};
+    opacity: 0.4;
+  }
+
+  &::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    cursor: pointer;
+    width: 2rem;
+    position: absolute;
+    left: 0.5rem;
+    bottom: 0.75rem;
+    height: 1.5rem;
+  }
+`;
+
+export const FieldDivider = styled.div`
+  width: 100%;
+  height: 1px;
+  background: ${({ theme }) => theme.colors.border};
+  opacity: 0.5;
 `;
 
 export const IconButton = styled.button<{ $variant?: 'primary' | 'danger' | 'outline' }>`

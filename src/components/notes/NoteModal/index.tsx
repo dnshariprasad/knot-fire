@@ -200,29 +200,47 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
               >
-                <S.Input 
-                  placeholder={t('notes.fieldLabel')} 
+                <S.FieldInput 
+                  $variant="label"
                   value={field.label}
-                  style={{ flex: 1.2 }}
                   onChange={(e) => {
                     const updated = [...customFields];
                     updated[idx].label = e.target.value;
                     setCustomFields(updated);
                   }}
                 />
-                <S.Input 
-                  placeholder={t('notes.fieldValue')} 
+                <S.FieldInput 
+                  $variant="value"
+                  $isDate={field.label.toLowerCase().includes('date')}
+                  $isLink={field.label.toLowerCase().includes('link')}
                   value={field.value}
                   type={field.label.toLowerCase().includes('pass') ? 'password' : field.label.toLowerCase().includes('date') ? 'date' : 'text'}
-                  style={{ flex: 2 }}
                   onChange={(e) => {
                     const updated = [...customFields];
                     updated[idx].value = e.target.value;
                     setCustomFields(updated);
                   }}
                 />
-                <S.IconButton onClick={() => setCustomFields(customFields.filter((_, i) => i !== idx))} $variant="danger">
-                  <Trash2 size={16} />
+                {field.label.toLowerCase().includes('date') && (
+                  <Calendar 
+                    size={16} 
+                    style={{ 
+                      position: 'absolute', 
+                      left: '1rem', 
+                      top: '68%',
+                      transform: 'translateY(-50%)',
+                      pointerEvents: 'none',
+                      color: '#6366f1',
+                      opacity: 0.9
+                    }} 
+                  />
+                )}
+                <S.IconButton 
+                  onClick={() => setCustomFields(customFields.filter((_, i) => i !== idx))} 
+                  $variant="danger"
+                  style={{ position: 'absolute', top: '4px', right: '4px', padding: '0.25rem' }}
+                >
+                  <Trash2 size={14} />
                 </S.IconButton>
               </S.FieldRow>
             ))}
