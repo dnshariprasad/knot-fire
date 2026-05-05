@@ -165,10 +165,6 @@ function App() {
       ) : (
         <AppContainer>
           <Header 
-            onAddNote={() => {
-              setEditingNote(null);
-              setIsModalOpen(true);
-            }}
             onThemeToggle={toggleTheme}
             onSettingsClick={() => setIsSettingsOpen(true)}
             themeMode={themeMode}

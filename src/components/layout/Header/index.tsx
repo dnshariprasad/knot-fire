@@ -1,18 +1,15 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { UserDropdown } from '../UserDropdown';
 import * as S from './styles';
 
 interface HeaderProps {
-  onAddNote: () => void;
   onThemeToggle: () => void;
   onSettingsClick: () => void;
   themeMode: 'light' | 'dark';
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
-  onAddNote,
   onThemeToggle,
   onSettingsClick,
   themeMode
@@ -30,10 +27,6 @@ export const Header: React.FC<HeaderProps> = ({
         </S.LeftSection>
 
         <S.RightSection>
-          <S.AddButton onClick={onAddNote}>
-            <Plus size={20} />
-            <span>{t('app.newNote')}</span>
-          </S.AddButton>
           <UserDropdown 
             onThemeToggle={onThemeToggle} 
             onSecurityClick={onSettingsClick}
