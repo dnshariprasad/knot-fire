@@ -137,9 +137,45 @@ export const TagInputWrapper = styled.div`
   min-height: 42px;
   align-items: center;
 
+  position: relative;
+
   &:focus-within {
     border-color: ${({ theme }) => theme.colors.primary};
     background: ${({ theme }) => theme.colors.surface};
+  }
+`;
+
+export const SuggestionsContainer = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  margin-top: -1px;
+`;
+
+export const SuggestionItem = styled.div<{ $selected?: boolean }>`
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: ${({ theme, $selected }) => $selected ? theme.colors.primary : theme.colors.text};
+  background: ${({ theme, $selected }) => $selected ? theme.colors.surfaceLight : 'transparent'};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceLight};
+    color: ${({ theme }) => theme.colors.primary};
   }
 `;
 

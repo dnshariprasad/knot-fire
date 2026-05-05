@@ -246,6 +246,7 @@ function App() {
           {isModalOpen && (
             <NoteModal 
               note={editingNote}
+              allTags={allTags}
               onClose={() => setIsModalOpen(false)}
               onSave={handleSaveNote}
               onDelete={(id) => {

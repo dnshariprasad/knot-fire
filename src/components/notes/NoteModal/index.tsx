@@ -16,12 +16,13 @@ import * as S from './styles';
 
 interface NoteModalProps {
   note?: Note | null;
+  allTags: string[];
   onClose: () => void;
   onSave: (note: Partial<Note>) => void;
   onDelete?: (id: string) => void;
 }
 
-export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onDelete }) => {
+export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, onSave, onDelete }) => {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(!note);
   
@@ -37,6 +38,14 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
   const [isVerified, setIsVerified] = useState(false);
   const [verifyPin, setVerifyPin] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const filteredSuggestions = allTags.filter(tag => 
+    tag.toLowerCase().includes(tagInputValue.toLowerCase()) && 
+    !tagList.includes(tag)
+  ).slice(0, 5);
 
   useEffect(() => {
     if (note) {
@@ -66,7 +75,16 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
     if (val && !tagList.includes(val)) {
       setTagList([...tagList, val]);
       setTagInputValue('');
+      setShowSuggestions(false);
     }
+  };
+
+  const handleSuggestionClick = (tag: string) => {
+    if (!tagList.includes(tag)) {
+      setTagList([...tagList, tag]);
+    }
+    setTagInputValue('');
+    setShowSuggestions(false);
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
@@ -261,15 +279,51 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                 id="tag-input"
                 placeholder={t('notes.addTagPlaceholder')} 
                 value={tagInputValue}
-                onChange={(e) => setTagInputValue(e.target.value)}
+                onChange={(e) => {
+                  setTagInputValue(e.target.value);
+                  setShowSuggestions(true);
+                  setSelectedIndex(0);
+                }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ',') {
+                  if (e.key === 'ArrowDown') {
                     e.preventDefault();
-                    handleAddTag();
+                    setShowSuggestions(true);
+                    setSelectedIndex(prev => (prev + 1) % Math.max(filteredSuggestions.length, 1));
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setShowSuggestions(true);
+                    setSelectedIndex(prev => (prev - 1 + filteredSuggestions.length) % Math.max(filteredSuggestions.length, 1));
+                  } else if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    if (showSuggestions && filteredSuggestions.length > 0 && tagInputValue) {
+                      handleSuggestionClick(filteredSuggestions[selectedIndex]);
+                    } else {
+                      handleAddTag();
+                    }
+                  } else if (e.key === 'Escape') {
+                    setShowSuggestions(false);
                   }
                 }}
-                onBlur={() => handleAddTag()}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setShowSuggestions(false)}
               />
+              {showSuggestions && tagInputValue && filteredSuggestions.length > 0 && (
+                <S.SuggestionsContainer>
+                  {filteredSuggestions.map((tag, idx) => (
+                    <S.SuggestionItem 
+                      key={tag}
+                      $selected={idx === selectedIndex}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSuggestionClick(tag);
+                      }}
+                      onMouseEnter={() => setSelectedIndex(idx)}
+                    >
+                      <Hash size={12} /> {tag}
+                    </S.SuggestionItem>
+                  ))}
+                </S.SuggestionsContainer>
+              )}
             </S.TagInputWrapper>
           </S.FormGroup>
 
