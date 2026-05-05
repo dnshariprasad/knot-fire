@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import type { Note, CustomField } from '../../../types';
 import { Modal } from '../../common/Modal';
+import { ConfirmModal } from '../../common/ConfirmModal';
 import * as S from './styles';
 
 interface NoteModalProps {
@@ -35,6 +36,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
   const [pin, setPin] = useState('');
   const [isVerified, setIsVerified] = useState(false);
   const [verifyPin, setVerifyPin] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (note) {
@@ -130,7 +132,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
   const modalTitle = (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {isEditing ? (note ? t('notes.editNote') : t('notes.createNote')) : title}
+        {isEditing ? (note ? t('notes.editNote') : t('notes.createNote')) : t('notes.notePreview')}
       </span>
       {isPrivate && !isVerified && <LockIcon size={16} style={{ flexShrink: 0, color: '#6366f1' }} />}
       {isPrivate && isVerified && <LockIcon size={16} style={{ flexShrink: 0, opacity: 0.5 }} />}
@@ -368,9 +370,9 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
             </S.CustomFieldDisplay>
           )}
 
-          <div style={{ marginTop: 'auto', paddingTop: '1.5rem' }}>
+          <div style={{ marginTop: 'auto' }}>
             {note && (
-              <S.Timestamp title={t('notes.createdDate')} style={{ marginBottom: '1rem' }}>
+              <S.Timestamp title={t('notes.createdDate')}>
                 <Calendar size={14} />
                 {new Date(note.createdAt).toLocaleString(undefined, {
                   dateStyle: 'medium',
@@ -393,11 +395,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                           {onDelete && note && (
                             <S.PopoverItem 
                               $danger 
-                              onSelect={() => {
-                                if (window.confirm(t('notes.deleteConfirm'))) {
-                                  onDelete(note.id);
-                                }
-                              }}
+                              onSelect={() => setShowDeleteConfirm(true)}
                             >
                               <Trash2 size={16} /> {t('common.delete')}
                             </S.PopoverItem>
@@ -405,13 +403,11 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
                         </S.Popover>
                       </DropdownMenu.Portal>
                     </DropdownMenu.Root>
-
                     <S.IconButton $variant="outline" onClick={handleShare} style={{ width: '48px', height: '42px' }}>
                       <Share2 size={20} />
                     </S.IconButton>
                   </>
                 )}
-
                 <S.Button $variant="primary" onClick={() => setIsEditing(true)} style={{ flex: 1 }}>
                   <Edit2 size={18} /> {t('notes.editNote')}
                 </S.Button>
@@ -419,6 +415,21 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, onClose, onSave, onD
             </S.Footer>
           </div>
         </S.ViewContent>
+      )}
+
+      {showDeleteConfirm && note && (
+        <ConfirmModal
+          isOpen={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={() => {
+            if (onDelete) {
+              onDelete(note.id);
+              setShowDeleteConfirm(false);
+            }
+          }}
+          title={t('notes.deleteNote')}
+          message={t('notes.deleteConfirm')}
+        />
       )}
     </Modal>
   );

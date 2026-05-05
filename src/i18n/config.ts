@@ -21,6 +21,7 @@ i18n
     interpolation: {
       escapeValue: false,
     },
+    keySeparator: false,
   });
 
 i18n.on('languageChanged', (lng) => {

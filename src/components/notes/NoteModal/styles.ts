@@ -286,12 +286,13 @@ export const AddFieldButton = styled.button`
 `;
 
 export const Footer = styled.div`
-  padding: 1.25rem 1.5rem;
+  padding-top: 1.5rem;
   border-top: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  width: 100%;
 `;
 
 export const Timestamp = styled.div`
@@ -364,13 +365,14 @@ export const Toggle = styled.button<{ $active: boolean }>`
 export const ViewContent = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
+  min-height: 100%;
 `;
 
 export const ViewHeader = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 `;
 
 export const ViewTitle = styled.h1`

@@ -1,55 +1,21 @@
 import React from 'react';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useTranslation } from 'react-i18next';
 import type { Note } from '../../../types';
 import { 
-  Tag as TagIcon, MoreVertical, MapPin, Hash, 
-  Calendar, Share2, Trash2, 
-  ExternalLink, Globe, User as UserIcon, Lock as LockIcon
+  Tag as TagIcon, MapPin, Hash, 
+  Calendar, Globe, User as UserIcon, Lock as LockIcon, ExternalLink
 } from 'lucide-react';
-import toast from 'react-hot-toast';
 import * as S from './styles';
 
 interface NoteCardProps {
   note: Note;
   onClick: () => void;
-  onDelete: (id: string) => void;
   onToggleTag: (tag: string) => void;
 }
 
-export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onDelete, onToggleTag }) => {
+export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag }) => {
   const { t } = useTranslation();
 
-  const handleShare = async (e: Event) => {
-    e.stopPropagation();
-    if (note.isPrivate) {
-      toast.error(t('notes.shareFailedPrivate')); // Need to add this to translation.json
-      return;
-    }
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: note.title,
-          text: note.content,
-          url: window.location.href
-        });
-      } else {
-        await navigator.clipboard.writeText(`${note.title}\n\n${note.content}`);
-        toast.success(t('notes.copySuccess'));
-      }
-    } catch (err) {
-      if (err instanceof Error && err.name !== 'AbortError') {
-        toast.error(t('notes.shareFailed'));
-      }
-    }
-  };
-
-  const handleDelete = (e: Event) => {
-    e.stopPropagation();
-    if (window.confirm(t('notes.deleteConfirm'))) {
-      onDelete(note.id);
-    }
-  };
 
   const getFieldIcon = (label: string) => {
     const l = label.toLowerCase();
@@ -72,25 +38,6 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onDelete, onT
       {(note.title || !note.isPrivate) && (
         <S.Header>
           {note.title && <S.Title $blurred={note.isPrivate}>{note.title}</S.Title>}
-          <div style={{ position: 'relative', marginLeft: 'auto' }} onClick={(e) => e.stopPropagation()}>
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
-                <S.MoreButton>
-                  <MoreVertical size={16} />
-                </S.MoreButton>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Portal>
-                <S.Popover sideOffset={4} align="end">
-                  <S.PopoverItem onSelect={handleShare}>
-                    <Share2 size={14} /> {t('common.share')}
-                  </S.PopoverItem>
-                  <S.PopoverItem $danger onSelect={handleDelete}>
-                    <Trash2 size={14} /> {t('common.delete')}
-                  </S.PopoverItem>
-                </S.Popover>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
-          </div>
         </S.Header>
       )}
 

@@ -1,13 +1,14 @@
 // Force refresh: 1777998981408
 import { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { useNotes } from './hooks/useNotes';
 import { Login } from './components/auth/Login';
 import { Header } from './components/layout/Header';
 import { NoteCard } from './components/notes/NoteCard';
 import { NoteModal } from './components/notes/NoteModal';
+import { NoteSkeleton } from './components/notes/NoteSkeleton';
 import type { Note } from './types';
 import { FilterToolbar } from './components/filters/FilterToolbar';
 import { Toaster } from 'react-hot-toast';
@@ -216,17 +217,17 @@ function App() {
             )}
 
             {notesLoading ? (
-              <EmptyState>
-                <Loader2 size={32} className="animate-spin" color={currentTheme.colors.primary} />
-                <p>{t('app.loadingNotes')}</p>
-              </EmptyState>
+              <NotesGrid $viewMode={viewMode}>
+                {[...Array(6)].map((_, i) => (
+                  <NoteSkeleton key={i} />
+                ))}
+              </NotesGrid>
             ) : (
               <NotesGrid $viewMode={viewMode}>
                 {filteredNotes.map(note => (
                   <NoteCard 
                     key={note.id} 
                     note={note} 
-                    onDelete={deleteNote}
                     onToggleTag={handleToggleTag}
                     onClick={() => {
                       setEditingNote(note);

@@ -6,10 +6,10 @@ export const Card = styled(motion.div)`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
-  padding: 1.25rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
@@ -29,7 +29,7 @@ export const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 0.5rem;
 `;
 
 export const Title = styled.h3<{ $blurred?: boolean }>`
@@ -140,9 +140,9 @@ export const Tag = styled.span`
 export const FieldsGrid = styled.div<{ $blurred?: boolean }>`
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
   margin-top: 0.25rem;
-  padding-top: 0.75rem;
+  padding-top: 0.5rem;
   border-top: 1px dashed ${({ theme }) => theme.colors.border};
   filter: ${({ $blurred }) => $blurred ? 'blur(6px)' : 'none'};
   opacity: ${({ $blurred }) => $blurred ? 0.2 : 1};
