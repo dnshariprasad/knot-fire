@@ -46,3 +46,21 @@ export const RightSection = styled.div`
   align-items: center;
   gap: 1.5rem;
 `;
+
+export const IconButton = styled.button`
+  background: transparent;
+  color: ${({ theme }) => theme.colors.textMuted};
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceLight};
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;

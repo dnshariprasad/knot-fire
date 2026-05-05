@@ -1,5 +1,5 @@
 // Force refresh: 1777998981408
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
 import { Plus, Loader2 } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
@@ -39,19 +39,36 @@ const MainContent = styled.main`
   }
 `;
 
-const NotesGrid = styled.div`
-  column-count: 3;
-  column-gap: 1.5rem;
-  width: 100%;
-
-  @media (max-width: 1100px) {
-    column-count: 2;
-  }
-
-  @media (max-width: 640px) {
-    column-count: 2;
+const NotesGrid = styled.div<{ $viewMode?: 'grid' | 'list' }>`
+  ${({ $viewMode }) => $viewMode === 'list' ? `
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+    
+    & > * {
+      margin-bottom: 0 !important;
+    }
+  ` : `
+    column-count: 3;
     column-gap: 1rem;
-  }
+    
+    @media (max-width: 1100px) {
+      column-count: 2;
+    }
+    
+    @media (max-width: 640px) {
+      column-count: 2;
+      column-gap: 0.75rem;
+    }
+
+    & > * {
+      break-inside: avoid;
+      margin-bottom: 1rem;
+    }
+  `}
+  width: 100%;
 `;
 
 const EmptyState = styled.div`
@@ -99,6 +116,13 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    return (localStorage.getItem('knot_view_mode') as 'grid' | 'list') || 'grid';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('knot_view_mode', viewMode);
+  }, [viewMode]);
 
   const handleToggleTag = (targetTag: string) => {
     setSelectedTags(prev => 
@@ -176,6 +200,8 @@ function App() {
             allTags={allTags}
             selectedTags={selectedTags}
             toggleTag={handleToggleTag}
+            viewMode={viewMode}
+            onViewModeToggle={() => setViewMode(prev => prev === 'grid' ? 'list' : 'grid')}
           />
           
           <MainContent>
@@ -196,7 +222,7 @@ function App() {
                 <p>{t('app.loadingNotes')}</p>
               </EmptyState>
             ) : (
-              <NotesGrid>
+              <NotesGrid $viewMode={viewMode}>
                 {filteredNotes.map(note => (
                   <NoteCard 
                     key={note.id} 

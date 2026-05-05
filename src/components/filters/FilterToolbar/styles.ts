@@ -2,15 +2,19 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 
-export const ToolbarContainer = styled.div`
+export const ToolbarContainer = styled.div<{ $viewMode?: 'grid' | 'list' }>`
   display: flex;
   flex-direction: column;
   background: transparent;
   padding: 1.5rem 2rem 0.5rem 2rem;
   gap: 0.75rem;
   width: 100%;
-  max-width: 1200px;
+  max-width: ${({ $viewMode }) => $viewMode === 'list' ? '800px' : '1200px'};
   margin: 0 auto;
+
+  @media (max-width: 768px) {
+    padding: 1rem 1rem 0.5rem 1rem;
+  }
 `;
 
 export const SearchRow = styled.div`
@@ -29,7 +33,8 @@ export const SearchInput = styled.input`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  padding: 0.625rem 3rem 0.625rem 2.5rem;
+  padding: 0 3rem 0 2.5rem;
+  height: 42px;
   color: ${({ theme }) => theme.colors.text};
   font-size: 0.875rem;
   transition: all 0.2s ease;
@@ -65,6 +70,28 @@ export const FilterButton = styled.button<{ $active?: boolean }>`
   transition: all 0.2s ease;
 
   &:hover {
+    background: ${({ theme }) => theme.colors.surfaceLight};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+export const ToolbarButton = styled.button`
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.textMuted};
+  padding: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
     background: ${({ theme }) => theme.colors.surfaceLight};
     color: ${({ theme }) => theme.colors.primary};
   }

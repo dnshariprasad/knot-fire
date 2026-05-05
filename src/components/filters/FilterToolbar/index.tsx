@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, LayoutGrid, List } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import * as S from './styles';
 
@@ -10,6 +10,8 @@ interface FilterToolbarProps {
   selectedTags: string[];
   toggleTag: (tag: string) => void;
   allTags: string[];
+  viewMode: 'grid' | 'list';
+  onViewModeToggle: () => void;
 }
 
 export const FilterToolbar: React.FC<FilterToolbarProps> = ({
@@ -18,6 +20,8 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
   selectedTags,
   toggleTag,
   allTags,
+  viewMode,
+  onViewModeToggle
 }) => {
   const { t } = useTranslation();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -32,7 +36,7 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
   }, [allTags, tagSearch]);
 
   return (
-    <S.ToolbarContainer>
+    <S.ToolbarContainer $viewMode={viewMode}>
       <S.SearchRow>
         <S.SearchWrapper>
           <S.SearchIcon size={18} />
@@ -49,6 +53,13 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
             <SlidersHorizontal size={18} />
           </S.FilterButton>
         </S.SearchWrapper>
+
+        <S.ToolbarButton 
+          onClick={onViewModeToggle}
+          title={viewMode === 'grid' ? 'Switch to List' : 'Switch to Grid'}
+        >
+          {viewMode === 'grid' ? <List size={20} /> : <LayoutGrid size={20} />}
+        </S.ToolbarButton>
       </S.SearchRow>
 
       <AnimatePresence>
