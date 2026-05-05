@@ -69,32 +69,36 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onDelete, onT
       whileHover={{ y: -4 }}
       onClick={onClick}
     >
-      <S.Header>
-        <S.Title $blurred={note.isPrivate}>{note.title || t('notes.untitled')}</S.Title>
-        <div style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
-              <S.MoreButton>
-                <MoreVertical size={16} />
-              </S.MoreButton>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <S.Popover sideOffset={4} align="end">
-                <S.PopoverItem onSelect={handleShare}>
-                  <Share2 size={14} /> {t('common.share')}
-                </S.PopoverItem>
-                <S.PopoverItem $danger onSelect={handleDelete}>
-                  <Trash2 size={14} /> {t('common.delete')}
-                </S.PopoverItem>
-              </S.Popover>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
-        </div>
-      </S.Header>
+      {(note.title || !note.isPrivate) && (
+        <S.Header>
+          {note.title && <S.Title $blurred={note.isPrivate}>{note.title}</S.Title>}
+          <div style={{ position: 'relative', marginLeft: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <S.MoreButton>
+                  <MoreVertical size={16} />
+                </S.MoreButton>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <S.Popover sideOffset={4} align="end">
+                  <S.PopoverItem onSelect={handleShare}>
+                    <Share2 size={14} /> {t('common.share')}
+                  </S.PopoverItem>
+                  <S.PopoverItem $danger onSelect={handleDelete}>
+                    <Trash2 size={14} /> {t('common.delete')}
+                  </S.PopoverItem>
+                </S.Popover>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
+          </div>
+        </S.Header>
+      )}
 
-      <S.Content $blurred={note.isPrivate}>
-        {note.isPrivate ? t('notes.privateHidden') : note.content}
-      </S.Content>
+      {(note.isPrivate || note.content) && (
+        <S.Content $blurred={note.isPrivate}>
+          {note.isPrivate ? t('notes.privateHidden') : note.content}
+        </S.Content>
+      )}
 
       {note.tags.length > 0 && (
         <S.TagContainer $blurred={note.isPrivate}>

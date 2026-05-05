@@ -14,6 +14,11 @@ export const Overlay = styled(motion.div)`
   justify-content: center;
   z-index: 2000;
   padding: 1.5rem;
+
+  @media (max-width: 768px) {
+    align-items: flex-end;
+    padding: 0;
+  }
 `;
 
 export const Modal = styled(motion.div)`
@@ -26,6 +31,26 @@ export const Modal = styled(motion.div)`
   flex-direction: column;
   box-shadow: ${({ theme }) => theme.shadows.lg};
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    border-radius: 24px 24px 0 0;
+    border-bottom: none;
+  }
+`;
+
+export const ModalHandle = styled.div`
+  display: none;
+  width: 40px;
+  height: 4px;
+  background: ${({ theme }) => theme.colors.border};
+  border-radius: 2px;
+  margin: 12px auto 0;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
 `;
 
 export const Header = styled.div`

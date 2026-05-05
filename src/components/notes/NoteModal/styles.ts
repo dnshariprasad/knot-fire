@@ -239,7 +239,10 @@ export const IconButton = styled.button<{ $variant?: 'primary' | 'danger' | 'out
     theme.colors.textMuted};
   padding: 0.5rem;
   border-radius: 8px;
-  border: ${({ theme, $variant }) => $variant === 'danger' ? `1px solid ${theme.colors.error}30` : 'none'};
+  border: ${({ theme, $variant }) => 
+    $variant === 'danger' ? `1px solid ${theme.colors.error}30` : 
+    $variant === 'outline' ? `1px solid ${theme.colors.border}` : 
+    'none'};
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -252,6 +255,8 @@ export const IconButton = styled.button<{ $variant?: 'primary' | 'danger' | 'out
       $variant === 'primary' ? theme.colors.primaryDark : 
       $variant === 'danger' ? theme.colors.error + '20' : 
       theme.colors.surfaceLight};
+    border-color: ${({ theme, $variant }) => 
+      $variant === 'outline' ? theme.colors.primary : 'none'};
     color: ${({ theme, $variant }) => 
       $variant === 'primary' ? 'white' : 
       $variant === 'danger' ? theme.colors.error : 
