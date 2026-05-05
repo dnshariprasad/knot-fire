@@ -7,18 +7,20 @@ interface HeaderProps {
   onThemeToggle: () => void;
   onSettingsClick: () => void;
   themeMode: 'light' | 'dark';
+  viewMode?: 'grid' | 'list';
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
   onThemeToggle,
   onSettingsClick,
-  themeMode
+  themeMode,
+  viewMode = 'grid'
 }) => {
   const { t } = useTranslation();
 
   return (
     <S.HeaderContainer>
-      <S.HeaderContent>
+      <S.HeaderContent $viewMode={viewMode}>
         <S.LeftSection>
           <S.Logo onClick={() => window.location.reload()}>
             <img src="/favicon.svg" alt={t('app.logoAlt')} width="32" height="32" />

@@ -9,14 +9,18 @@ export const HeaderContainer = styled.header`
   width: 100%;
 `;
 
-export const HeaderContent = styled.div`
-  max-width: 1200px;
+export const HeaderContent = styled.div<{ $viewMode?: 'grid' | 'list' }>`
+  max-width: ${({ $viewMode }) => $viewMode === 'list' ? '800px' : '1200px'};
   margin: 0 auto;
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+  }
 `;
 
 export const LeftSection = styled.div`

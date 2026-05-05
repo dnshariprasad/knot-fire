@@ -27,10 +27,10 @@ const AppContainer = styled.div`
   transition: background 0.3s ease;
 `;
 
-const MainContent = styled.main`
+const MainContent = styled.main<{ $viewMode?: 'grid' | 'list' }>`
   flex: 1;
   padding: 2rem;
-  max-width: 1200px;
+  max-width: ${({ $viewMode }) => $viewMode === 'list' ? '800px' : '1200px'};
   margin: 0 auto;
   width: 100%;
 
@@ -44,8 +44,6 @@ const NotesGrid = styled.div<{ $viewMode?: 'grid' | 'list' }>`
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    max-width: 800px;
-    margin: 0 auto;
     
     & > * {
       margin-bottom: 0 !important;
@@ -192,6 +190,7 @@ function App() {
             onThemeToggle={toggleTheme}
             onSettingsClick={() => setIsSettingsOpen(true)}
             themeMode={themeMode}
+            viewMode={viewMode}
           />
 
           <FilterToolbar 
@@ -204,7 +203,7 @@ function App() {
             onViewModeToggle={() => setViewMode(prev => prev === 'grid' ? 'list' : 'grid')}
           />
           
-          <MainContent>
+          <MainContent $viewMode={viewMode}>
             {!notesLoading && filteredNotes.length === 0 && (
                <EmptyState>
                  <p>{searchQuery || selectedTags.length > 0 ? t('app.noMatch') : t('app.emptyState')}</p>
