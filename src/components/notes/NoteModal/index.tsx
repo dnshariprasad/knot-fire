@@ -49,13 +49,32 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
 
   useEffect(() => {
     if (note) {
-      setTitle(note.title);
-      setContent(note.content);
+      const initialFields = [...(note.customFields || [])];
+      
+      // Migrate Title if not already in custom fields
+      if (note.title && !initialFields.some(f => f.label.toLowerCase() === 'title')) {
+        initialFields.unshift({ label: 'Title', value: note.title });
+      }
+      
+      // Migrate Description if not already in custom fields
+      if (note.content && !initialFields.some(f => f.label.toLowerCase() === 'description')) {
+        const descIndex = initialFields.findIndex(f => f.label.toLowerCase() === 'title');
+        if (descIndex !== -1) {
+          initialFields.splice(descIndex + 1, 0, { label: 'Description', value: note.content });
+        } else {
+          initialFields.unshift({ label: 'Description', value: note.content });
+        }
+      }
+
+      setCustomFields(initialFields);
       setTagList(note.tags || []);
-      setCustomFields(note.customFields || []);
       setIsPrivate(note.isPrivate || false);
       setPin(note.pin || '');
       setIsVerified(!note.isPrivate);
+      
+      // Clear core states as we use custom fields now
+      setTitle('');
+      setContent('');
     } else {
       setTitle('');
       setContent('');
@@ -103,9 +122,13 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
       currentTags.push(finalVal);
     }
 
+    // Extract Title and Description from custom fields for top-level note properties
+    const titleField = customFields.find(f => f.label.toLowerCase() === 'title');
+    const descField = customFields.find(f => f.label.toLowerCase() === 'description');
+
     onSave({
-      title,
-      content,
+      title: titleField ? titleField.value : '',
+      content: descField ? descField.value : '',
       tags: currentTags,
       customFields: customFields.filter(f => f.label.trim() !== ''),
       isPrivate,
@@ -270,18 +293,31 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                     setCustomFields(updated);
                   }}
                 />
-                <S.FieldInput 
-                  $variant="value"
-                  $isDate={field.label.toLowerCase().includes('date')}
-                  $isLink={field.label.toLowerCase().includes('link')}
-                  value={field.value}
-                  type={field.label.toLowerCase().includes('pass') ? 'password' : field.label.toLowerCase().includes('date') ? 'date' : 'text'}
-                  onChange={(e) => {
-                    const updated = [...customFields];
-                    updated[idx].value = e.target.value;
-                    setCustomFields(updated);
-                  }}
-                />
+                {field.label.toLowerCase().includes('description') || field.label.toLowerCase().includes('content') ? (
+                  <S.FieldTextArea 
+                    placeholder={t('notes.contentPlaceholder')} 
+                    value={field.value}
+                    onChange={(e) => {
+                      const updated = [...customFields];
+                      updated[idx].value = e.target.value;
+                      setCustomFields(updated);
+                    }}
+                    style={{ minHeight: '60px' }}
+                  />
+                ) : (
+                  <S.FieldInput 
+                    $variant="value"
+                    $isDate={field.label.toLowerCase().includes('date')}
+                    $isLink={field.label.toLowerCase().includes('link')}
+                    value={field.value}
+                    type={field.label.toLowerCase().includes('pass') ? 'password' : field.label.toLowerCase().includes('date') ? 'date' : 'text'}
+                    onChange={(e) => {
+                      const updated = [...customFields];
+                      updated[idx].value = e.target.value;
+                      setCustomFields(updated);
+                    }}
+                  />
+                )}
                 {field.label.toLowerCase().includes('date') && (
                   <Calendar 
                     size={16} 
