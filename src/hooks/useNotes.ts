@@ -7,7 +7,8 @@ import {
   addDoc, 
   updateDoc, 
   deleteDoc, 
-  doc
+  doc,
+  or
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import type { Note } from '../types';
@@ -27,17 +28,20 @@ export const useNotes = () => {
       return;
     }
 
+    // Query notes where the user is either the owner or a collaborator
     const q = query(
       collection(db, 'notes'),
-      where('userId', '==', user.uid)
+      or(
+        where('userId', '==', user.uid),
+        where('sharedWithUids', 'array-contains', user.uid)
+      )
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      console.log(`[useNotes] Received snapshot with ${snapshot.size} notes`);
       const notesData: Note[] = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
-        const decryptedNote = decryptNote({ id: doc.id, ...data });
+        const decryptedNote = decryptNote({ id: doc.id, ...data } as any);
         notesData.push(decryptedNote);
       });
       notesData.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -60,6 +64,7 @@ export const useNotes = () => {
     await addDoc(collection(db, 'notes'), {
       ...processedData,
       userId: user.uid,
+      ownerEmail: user.email,
       createdAt: now,
       updatedAt: now,
     });
@@ -77,9 +82,22 @@ export const useNotes = () => {
     });
   };
 
+  const shareNote = async (id: string, sharedWith: Note['sharedWith']) => {
+    if (!user) return;
+    
+    const noteRef = doc(db, 'notes', id);
+    const sharedWithUids = sharedWith?.map(u => u.userId) || [];
+    
+    await updateDoc(noteRef, {
+      sharedWith,
+      sharedWithUids,
+      updatedAt: Date.now(),
+    });
+  };
+
   const deleteNote = async (id: string) => {
     await deleteDoc(doc(db, 'notes', id));
   };
 
-  return { notes, loading, addNote, updateNote, deleteNote };
+  return { notes, loading, addNote, updateNote, deleteNote, shareNote };
 };

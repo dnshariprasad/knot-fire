@@ -3,18 +3,25 @@ import { useTranslation } from 'react-i18next';
 import type { Note } from '../../../types';
 import { 
   Tag as TagIcon, MapPin, Hash, 
-  Calendar, Globe, User as UserIcon, Lock as LockIcon, ExternalLink
+  Calendar, Globe, User as UserIcon, Lock as LockIcon, ExternalLink,
+  Share2
 } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
 import * as S from './styles';
 
 interface NoteCardProps {
   note: Note;
   onClick: () => void;
   onToggleTag: (tag: string) => void;
+  onShare: () => void;
 }
 
-export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag }) => {
+export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, onShare }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  const isSharedWithMe = note.userId !== user?.uid;
+  const collaboratorsCount = note.sharedWithUids?.length || 0;
 
 
   const getFieldIcon = (label: string) => {
@@ -35,11 +42,28 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag }
       whileHover={{ y: -4 }}
       onClick={onClick}
     >
-      {(note.title || !note.isPrivate) && (
-        <S.Header>
-          {note.title && <S.Title $blurred={note.isPrivate}>{note.title}</S.Title>}
-        </S.Header>
-      )}
+      <S.Header>
+        {note.title && <S.Title $blurred={note.isPrivate}>{note.title}</S.Title>}
+        {!note.title && !note.isPrivate && <div style={{ flex: 1 }} />}
+        
+        <div style={{ display: 'flex', gap: '0.4rem', marginLeft: 'auto', alignItems: 'center' }}>
+          {isSharedWithMe && (
+            <S.FieldBadge title={note.ownerEmail || ''}>
+              <UserIcon size={10} />
+            </S.FieldBadge>
+          )}
+          <S.FieldBadge 
+            $variant={collaboratorsCount > 0 ? 'primary' : undefined}
+            $clickable
+            onClick={(e) => {
+              e.stopPropagation();
+              onShare();
+            }}
+          >
+            <Share2 size={10} /> {collaboratorsCount > 0 ? collaboratorsCount : ''}
+          </S.FieldBadge>
+        </div>
+      </S.Header>
 
       {(note.isPrivate || note.content) && (
         <S.Content $blurred={note.isPrivate}>

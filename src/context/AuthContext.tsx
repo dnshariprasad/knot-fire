@@ -6,6 +6,9 @@ import {
 import type { User } from 'firebase/auth';
 import { auth } from '../firebase';
 
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -19,9 +22,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+
+      if (currentUser) {
+        // Sync user profile in background for sharing lookups
+        try {
+          await setDoc(doc(db, 'users', currentUser.uid), {
+            uid: currentUser.uid,
+            email: currentUser.email,
+            displayName: currentUser.displayName,
+            photoURL: currentUser.photoURL,
+            lastLogin: Date.now()
+          }, { merge: true });
+        } catch (error) {
+          // Log but don't block user access
+          console.warn("[Auth] Profile sync deferred (likely security rules):", error);
+        }
+      }
     });
 
     return () => unsubscribe();

@@ -223,17 +223,19 @@ export const DynamicFieldsSection = styled.div`
 
 export const SectionHeader = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 `;
 
 export const QuickActionToolbar = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 `;
 
 export const QuickActionButton = styled.button`
@@ -312,6 +314,7 @@ export const FieldInput = styled.input<{ $variant?: 'label' | 'value'; $isDate?:
   text-transform: ${({ $variant }) => $variant === 'label' ? 'uppercase' : 'none'};
   letter-spacing: ${({ $variant }) => $variant === 'label' ? '0.08em' : 'normal'};
   width: 100%;
+  min-width: 0;
   outline: none;
 
   &::placeholder {
@@ -339,6 +342,7 @@ export const FieldTextArea = styled.textarea<{ $variant?: 'label' | 'value' }>`
   font-weight: 500;
   line-height: 1.6;
   width: 100%;
+  min-width: 0;
   resize: vertical;
   min-height: 100px;
   

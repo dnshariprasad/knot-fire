@@ -3,6 +3,12 @@ export interface CustomField {
   value: string;
 }
 
+export interface SharedUser {
+  userId: string;
+  email: string;
+  permission: 'read' | 'write';
+}
+
 export interface Note {
   id: string;
   title: string;
@@ -15,4 +21,7 @@ export interface Note {
   isEncrypted?: boolean;
   isPrivate?: boolean;
   pin?: string;
+  sharedWith?: SharedUser[];
+  sharedWithUids?: string[];
+  ownerEmail?: string;
 }

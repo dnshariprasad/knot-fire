@@ -42,6 +42,7 @@
   "notes.private": "Private",
   "notes.editNote": "Edit Note",
   "notes.createNote": "Create New Note",
+  "notes.saveFirst": "Save the note before sharing",
   "notes.titlePlaceholder": "Note Title",
   "notes.contentPlaceholder": "Write your thoughts...",
   "notes.deleteConfirm": "Delete this note?",
@@ -111,5 +112,18 @@
   "settings.language": "Language",
   "settings.selectLanguage": "Select your preferred language",
   "settings.english": "English",
-  "settings.telugu": "Telugu"
+  "settings.telugu": "Telugu",
+  "notes.shareWith": "Share Note",
+  "notes.enterUserEmail": "Enter email address",
+  "notes.addCollaborator": "Add",
+  "notes.permissions": "Permissions",
+  "notes.readOnly": "READ",
+  "notes.readWrite": "WRITE",
+  "notes.collaborators": "Collaborators",
+  "notes.noCollaborators": "Not shared with anyone yet",
+  "notes.userNotFound": "User not found",
+  "notes.userAlreadyAdded": "User already in list",
+  "notes.shareSuccess": "Collaborator added",
+  "notes.removeCollaborator": "Remove",
+  "notes.removeCollaboratorConfirm": "Remove collaborator?"
 }

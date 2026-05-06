@@ -8,6 +8,7 @@ import { Login } from './components/auth/Login';
 import { Header } from './components/layout/Header';
 import { NoteCard } from './components/notes/NoteCard';
 import { NoteModal } from './components/notes/NoteModal';
+import { ShareModal } from './components/notes/ShareModal';
 import { NoteSkeleton } from './components/notes/NoteSkeleton';
 import type { Note } from './types';
 import { FilterToolbar } from './components/filters/FilterToolbar';
@@ -106,13 +107,14 @@ const AddButton = styled.button`
 function App() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { notes, loading: notesLoading, addNote, updateNote, deleteNote } = useNotes();
+  const { notes, loading: notesLoading, addNote, updateNote, deleteNote, shareNote } = useNotes();
   const { themeMode, toggleTheme, currentTheme } = useTheme();
   const { masterKey, setKey, setSkipped, isSkipped } = useCrypto();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
@@ -233,6 +235,10 @@ function App() {
                       setEditingNote(note);
                       setIsModalOpen(true);
                     }}
+                    onShare={() => {
+                      setEditingNote(note);
+                      setIsShareModalOpen(true);
+                    }}
                   />
                 ))}
               </NotesGrid>
@@ -253,11 +259,22 @@ function App() {
                 deleteNote(id);
                 setIsModalOpen(false);
               }}
+              onShare={(id, sharedWith) => shareNote(id, sharedWith)}
             />
           )}
 
           {isSettingsOpen && (
             <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+          )}
+
+          {isShareModalOpen && editingNote && (
+            <ShareModal 
+              note={editingNote}
+              onClose={() => setIsShareModalOpen(false)}
+              onShare={(sharedWith) => {
+                shareNote(editingNote.id, sharedWith);
+              }}
+            />
           )}
 
           <FAB 

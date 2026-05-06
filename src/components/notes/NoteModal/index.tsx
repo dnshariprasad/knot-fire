@@ -5,13 +5,14 @@ import {
   X, Type, Layout, Tag as TagIcon, PlusCircle, Trash2, 
   Calendar, MapPin, Share2, MoreVertical, Edit2, Plus, 
   ExternalLink, User as UserIcon, Lock as LockIcon,
-  Eye, EyeOff, Hash, Key
+  Eye, EyeOff, Hash, Key, Copy
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import type { Note, CustomField } from '../../../types';
+import type { Note, CustomField, SharedUser } from '../../../types';
 import { Modal } from '../../common/Modal';
 import { ConfirmModal } from '../../common/ConfirmModal';
+import { ShareModal } from '../ShareModal';
 import * as S from './styles';
 
 interface NoteModalProps {
@@ -20,9 +21,10 @@ interface NoteModalProps {
   onClose: () => void;
   onSave: (note: Partial<Note>) => void;
   onDelete?: (id: string) => void;
+  onShare?: (id: string, sharedWith: SharedUser[]) => void;
 }
 
-export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, onSave, onDelete }) => {
+export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, onSave, onDelete, onShare }) => {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(!note);
   
@@ -38,6 +40,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
   const [isVerified, setIsVerified] = useState(false);
   const [verifyPin, setVerifyPin] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -147,25 +150,12 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
     }
   };
 
-  const handleShare = async () => {
-    const shareData = {
-      title: `${t('app.title')}: ${title}`,
-      text: content,
-      url: window.location.href,
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(`${title}\n\n${content}`);
-        toast.success(t('notes.copySuccess'));
-      }
-    } catch (err) {
-      if (err instanceof Error && err.name !== 'AbortError') {
-        toast.error(t('notes.shareFailed'));
-      }
+  const handleShare = () => {
+    if (!note) {
+      toast.error(t('notes.saveFirst'));
+      return;
     }
+    setShowShareModal(true);
   };
 
   const isUrl = (text: string) => text.startsWith('http://') || text.startsWith('https://');
@@ -297,12 +287,22 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                   <S.FieldTextArea 
                     placeholder={t('notes.contentPlaceholder')} 
                     value={field.value}
+                    rows={1}
                     onChange={(e) => {
                       const updated = [...customFields];
                       updated[idx].value = e.target.value;
                       setCustomFields(updated);
+                      
+                      // Auto-expand
+                      e.target.style.height = 'auto';
+                      e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
-                    style={{ minHeight: '60px' }}
+                    onFocus={(e) => {
+                      // Initial expansion on focus
+                      e.target.style.height = 'auto';
+                      e.target.style.height = `${e.target.scrollHeight}px`;
+                    }}
+                    style={{ minHeight: '60px', overflow: 'hidden' }}
                   />
                 ) : (
                   <S.FieldInput 
@@ -476,7 +476,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                       }}
                       style={{ padding: '0.25rem' }}
                     >
-                      <Share2 size={12} />
+                      <Copy size={12} />
                     </S.IconButton>
                   </div>
                   <S.FieldValue>
@@ -587,6 +587,14 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
           }}
           title={t('notes.deleteNote')}
           message={t('notes.deleteConfirm')}
+        />
+      )}
+
+      {showShareModal && note && onShare && (
+        <ShareModal 
+          note={note}
+          onClose={() => setShowShareModal(false)}
+          onShare={(sharedWith) => onShare(note.id, sharedWith)}
         />
       )}
     </Modal>

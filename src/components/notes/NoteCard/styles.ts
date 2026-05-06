@@ -206,3 +206,27 @@ export const PrivateBadge = styled.div`
   color: ${({ theme }) => theme.colors.text};
   box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
+
+export const FieldBadge = styled.div<{ $variant?: 'primary'; $clickable?: boolean }>`
+  background: ${({ theme, $variant }) => $variant === 'primary' ? theme.colors.primary + '15' : theme.colors.surfaceLight};
+  color: ${({ theme, $variant }) => $variant === 'primary' ? theme.colors.primary : theme.colors.textMuted};
+  border: 1px solid ${({ theme, $variant }) => $variant === 'primary' ? theme.colors.primary + '25' : theme.colors.border};
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  cursor: ${({ $clickable }) => $clickable ? 'pointer' : 'default'};
+  transition: all 0.2s ease;
+
+  ${({ $clickable, theme }) => $clickable && `
+    &:hover {
+      background: ${theme.colors.primary + '25'};
+      border-color: ${theme.colors.primary};
+      color: ${theme.colors.primary};
+      transform: translateY(-1px);
+    }
+  `}
+`;
