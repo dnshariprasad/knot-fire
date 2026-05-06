@@ -330,6 +330,28 @@ export const FieldInput = styled.input<{ $variant?: 'label' | 'value'; $isDate?:
   }
 `;
 
+export const FieldTextArea = styled.textarea<{ $variant?: 'label' | 'value' }>`
+  background: transparent;
+  border: none;
+  padding: 0.25rem 1rem 0.75rem;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.6;
+  width: 100%;
+  resize: vertical;
+  min-height: 100px;
+  
+  &:focus {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textMuted};
+    opacity: 0.4;
+  }
+`;
+
 export const FieldDivider = styled.div`
   width: 100%;
   height: 1px;

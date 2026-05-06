@@ -231,6 +231,12 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
             <S.SectionHeader>
               <S.Label style={{ margin: 0 }}><PlusCircle size={14} /> {t('notes.additionalFields')}</S.Label>
               <S.QuickActionToolbar>
+                <S.QuickActionButton onClick={() => setCustomFields([...customFields, { label: 'Title', value: '' }])}>
+                  <Type size={12} /> {t('notes.titleLabel')}
+                </S.QuickActionButton>
+                <S.QuickActionButton onClick={() => setCustomFields([...customFields, { label: 'Description', value: '' }])}>
+                  <Layout size={12} /> {t('notes.descriptionLabel')}
+                </S.QuickActionButton>
                 <S.QuickActionButton onClick={() => setCustomFields([...customFields, { label: 'ID', value: '' }])}>
                   <UserIcon size={12} /> {t('common.id')}
                 </S.QuickActionButton>
@@ -364,24 +370,6 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
             </S.TagInputWrapper>
           </S.FormGroup>
 
-          <S.FormGroup>
-            <S.Label><Type size={14} /> {t('notes.titleLabel')}</S.Label>
-            <S.Input 
-              placeholder={t('notes.titlePlaceholder')} 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              autoFocus={!note}
-            />
-          </S.FormGroup>
-
-          <S.FormGroup>
-            <S.Label><Layout size={14} /> {t('notes.descriptionLabel')}</S.Label>
-            <S.TextArea 
-              placeholder={t('notes.contentPlaceholder')} 
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
-          </S.FormGroup>
 
           <S.FormGroup style={{ padding: '1.25rem', background: '#f8fafc05', borderRadius: '12px', border: '1px solid #e2e8f010' }}>
             <S.Label style={{ marginBottom: '0.5rem' }}>
