@@ -410,7 +410,7 @@ export const AddFieldButton = styled.button`
 `;
 
 export const Footer = styled.div`
-  padding-top: 1.5rem;
+  padding: 1.5rem 0;
   border-top: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   justify-content: space-between;
@@ -425,6 +425,7 @@ export const Timestamp = styled.div`
   display: flex;
   align-items: center;
   gap: 0.375rem;
+  margin-bottom: 1.5rem;
 `;
 
 export const Button = styled.button<{ $variant?: 'primary' | 'outline' | 'danger' }>`

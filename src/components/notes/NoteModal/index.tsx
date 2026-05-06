@@ -147,6 +147,43 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
 
   const isUrl = (text: string) => text.startsWith('http://') || text.startsWith('https://');
 
+  const getPeriodString = (dateStr: string) => {
+    try {
+      const targetDate = new Date(dateStr);
+      if (isNaN(targetDate.getTime())) return null;
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      targetDate.setHours(0, 0, 0, 0);
+      
+      const diffTime = targetDate.getTime() - today.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) return t('common.today');
+      
+      const isPast = diffDays < 0;
+      let remainingDays = Math.abs(diffDays);
+      
+      const years = Math.floor(remainingDays / 365);
+      remainingDays %= 365;
+      const months = Math.floor(remainingDays / 30);
+      remainingDays %= 30;
+      const weeks = Math.floor(remainingDays / 7);
+      const days = remainingDays % 7;
+      
+      const parts = [];
+      if (years > 0) parts.push(`${years}Y`);
+      if (months > 0) parts.push(`${months}M`);
+      if (weeks > 0) parts.push(`${weeks}W`);
+      if (days > 0) parts.push(`${days}D`);
+      
+      const duration = parts.join(' ');
+      return isPast ? `${duration} Ago` : `In ${duration}`;
+    } catch (e) {
+      return null;
+    }
+  };
+
   const modalTitle = (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -333,6 +370,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
               placeholder={t('notes.titlePlaceholder')} 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              autoFocus={!note}
             />
           </S.FormGroup>
 
@@ -397,8 +435,6 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
             </S.ViewHeader>
           )}
 
-          {content && <S.ViewBody>{content}</S.ViewBody>}
-
           {customFields.length > 0 && (
             <S.CustomFieldDisplay>
               {customFields.map((field, idx) => (
@@ -423,8 +459,6 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                     {field.label.toLowerCase().includes('location') && <MapPin size={14} color="#94a3b8" />}
                     {field.label.toLowerCase().includes('id') && <UserIcon size={14} color="#94a3b8" />}
                     {field.label.toLowerCase().includes('pass') && <LockIcon size={14} color="#94a3b8" />}
-                    {(field.label.toLowerCase().includes('date') || field.label.toLowerCase().includes('dob')) && <Calendar size={14} color="#94a3b8" />}
-                    
                     {field.label.toLowerCase().includes('pass') && !revealedFields[idx] ? (
                       '••••••••'
                     ) : isUrl(field.value) ? (
@@ -434,6 +468,25 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                     ) : (
                       field.value
                     )}
+
+                    {(field.label.toLowerCase().includes('date') || field.label.toLowerCase().includes('dob')) && (() => {
+                      const period = getPeriodString(field.value);
+                      return period ? (
+                        <span style={{ 
+                          fontSize: '0.65rem', 
+                          color: '#6366f1', 
+                          marginLeft: 'auto', 
+                          fontWeight: 800,
+                          background: '#6366f112',
+                          padding: '0.15rem 0.4rem',
+                          borderRadius: '4px',
+                          border: '1px solid #6366f120',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {period}
+                        </span>
+                      ) : null;
+                    })()}
                     
                     {field.label.toLowerCase().includes('pass') && (
                       <S.IconButton 
@@ -448,6 +501,8 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
               ))}
             </S.CustomFieldDisplay>
           )}
+
+          {content && <S.ViewBody>{content}</S.ViewBody>}
 
           <div style={{ marginTop: 'auto' }}>
             {note && (
