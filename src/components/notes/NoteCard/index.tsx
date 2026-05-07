@@ -48,7 +48,14 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
         
         <div style={{ display: 'flex', gap: '0.4rem', marginLeft: 'auto', alignItems: 'center' }}>
           {isSharedWithMe && (
-            <S.FieldBadge title={note.ownerEmail || ''}>
+            <S.FieldBadge 
+              $clickable
+              onClick={(e) => {
+                e.stopPropagation();
+                onShare();
+              }}
+              title={note.ownerEmail || ''}
+            >
               <UserIcon size={10} />
             </S.FieldBadge>
           )}
