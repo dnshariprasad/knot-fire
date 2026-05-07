@@ -38,6 +38,13 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
   return (
     <S.ToolbarContainer $viewMode={viewMode}>
       <S.SearchRow>
+        <S.ToolbarButton 
+          onClick={onViewModeToggle}
+          title={viewMode === 'grid' ? 'Switch to List' : 'Switch to Grid'}
+        >
+          {viewMode === 'grid' ? <List size={20} /> : <LayoutGrid size={20} />}
+        </S.ToolbarButton>
+
         <S.SearchWrapper>
           <S.SearchIcon size={18} />
           <S.SearchInput
@@ -53,13 +60,6 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
             <SlidersHorizontal size={18} />
           </S.FilterButton>
         </S.SearchWrapper>
-
-        <S.ToolbarButton 
-          onClick={onViewModeToggle}
-          title={viewMode === 'grid' ? 'Switch to List' : 'Switch to Grid'}
-        >
-          {viewMode === 'grid' ? <List size={20} /> : <LayoutGrid size={20} />}
-        </S.ToolbarButton>
       </S.SearchRow>
 
       <AnimatePresence>

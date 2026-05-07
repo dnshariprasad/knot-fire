@@ -33,8 +33,8 @@ export const SearchInput = styled.input`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  padding: 0 3rem 0 2.5rem;
-  height: 42px;
+  padding: 0 3rem 0 2.75rem;
+  height: 48px;
   color: ${({ theme }) => theme.colors.text};
   font-size: 0.875rem;
   transition: all 0.2s ease;
@@ -80,8 +80,8 @@ export const ToolbarButton = styled.button`
   border: 1px solid ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.textMuted};
   padding: 0;
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   display: flex;
   align-items: center;
