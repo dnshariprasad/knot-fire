@@ -5,7 +5,7 @@ import {
   X, Type, Layout, Tag as TagIcon, PlusCircle, Trash2, 
   Calendar, MapPin, Share2, MoreVertical, Edit2, Plus, 
   ExternalLink, User as UserIcon, Lock as LockIcon,
-  Eye, EyeOff, Hash, Key, Copy
+  Eye, EyeOff, Hash, Key, Copy, Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -44,6 +44,56 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isFetchingMetadata, setIsFetchingMetadata] = useState(false);
+
+  const fetchUrlMetadata = async (url: string) => {
+    if (!url.startsWith('http')) return;
+    
+    setIsFetchingMetadata(true);
+    try {
+      const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`);
+      const data = await response.json();
+      
+      if (data.status === 'success' && data.data) {
+        const { title: fetchedTitle, description: fetchedDesc } = data.data;
+        
+        setCustomFields(prev => {
+          let updated = [...prev];
+          
+          // Check if Title exists, if not add it at the top
+          const titleIdx = updated.findIndex(f => f.label.toLowerCase() === 'title');
+          if (titleIdx === -1) {
+            updated.unshift({ label: 'Title', value: fetchedTitle || '' });
+          } else if (!updated[titleIdx].value || updated[titleIdx].value === 'Untitled') {
+            updated[titleIdx].value = fetchedTitle || updated[titleIdx].value;
+          }
+          
+          // Check if Description exists, if not add it after title
+          const descIdx = updated.findIndex(f => f.label.toLowerCase() === 'description');
+          if (descIdx === -1) {
+            const newTitleIdx = updated.findIndex(f => f.label.toLowerCase() === 'title');
+            updated.splice(newTitleIdx + 1, 0, { label: 'Description', value: fetchedDesc || '' });
+          } else if (!updated[descIdx].value) {
+            updated[descIdx].value = fetchedDesc || '';
+          }
+          
+          return updated;
+        });
+
+        // Add suggestions based on domain or metadata keywords if available
+        const domain = new URL(url).hostname.replace('www.', '').split('.')[0];
+        if (domain && !tagList.includes(domain)) {
+          setTagList(prev => [...prev, domain]);
+        }
+        
+        toast.success(t('notes.metadataFetched'));
+      }
+    } catch (error) {
+      console.error('Error fetching metadata:', error);
+    } finally {
+      setIsFetchingMetadata(false);
+    }
+  };
 
   const filteredSuggestions = allTags.filter(tag => 
     tag.toLowerCase().includes(tagInputValue.toLowerCase()) && 
@@ -318,11 +368,30 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                     value={field.value}
                     type={field.label.toLowerCase().includes('pass') ? 'password' : field.label.toLowerCase().includes('date') ? 'date' : 'text'}
                     onChange={(e) => {
+                      const val = e.target.value;
                       const updated = [...customFields];
-                      updated[idx].value = e.target.value;
+                      updated[idx].value = val;
                       setCustomFields(updated);
+
+                      // If it's a link field and looks like a URL, fetch metadata
+                      if (field.label.toLowerCase().includes('link')) {
+                        const urlRegex = /^(https?:\/\/[^\s]+)$/;
+                        if (urlRegex.test(val.trim())) {
+                          fetchUrlMetadata(val.trim());
+                        }
+                      }
                     }}
                   />
+                )}
+                {field.label.toLowerCase().includes('link') && isFetchingMetadata && (
+                  <S.FetchingIndicator
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                  >
+                    <Loader2 size={12} />
+                    Fetching
+                  </S.FetchingIndicator>
                 )}
                 {field.label.toLowerCase().includes('date') && (
                   <S.DateIconWrapper size={16} />

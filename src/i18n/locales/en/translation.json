@@ -125,5 +125,6 @@
   "notes.userAlreadyAdded": "User already in list",
   "notes.shareSuccess": "Collaborator added",
   "notes.removeCollaborator": "Remove",
-  "notes.removeCollaboratorConfirm": "Remove collaborator?"
+  "notes.removeCollaboratorConfirm": "Remove collaborator?",
+  "notes.metadataFetched": "Link metadata fetched and filled!"
 }

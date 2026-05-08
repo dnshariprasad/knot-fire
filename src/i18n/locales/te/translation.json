@@ -112,5 +112,6 @@
   "settings.language": "భాష",
   "settings.selectLanguage": "మీకు నచ్చిన భాషను ఎంచుకోండి",
   "settings.english": "ఇంగ్లీష్",
-  "settings.telugu": "తెలుగు"
+  "settings.telugu": "తెలుగు",
+  "notes.metadataFetched": "లింక్ మెటాడేటా సేకరించబడింది మరియు నింపబడింది!"
 }

@@ -306,6 +306,14 @@ export const FieldInput = styled.input<{ $variant?: 'label' | 'value'; $isDate?:
   font-weight: ${({ $variant, $isLink }) => $variant === 'label' ? '800' : $isLink ? '400' : '600'};
   font-family: ${({ $isDate, $isLink }) => ($isDate || $isLink) ? "'JetBrains Mono', monospace" : 'inherit'};
 
+  &::placeholder {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: ${({ theme }) => theme.colors.textMuted};
+    opacity: 0.4;
+  }
+
   ${({ $isDate, theme }) => $isDate && `
     &::-webkit-datetime-edit {
       color: ${theme.colors.textMuted};
@@ -324,11 +332,6 @@ export const FieldInput = styled.input<{ $variant?: 'label' | 'value'; $isDate?:
   min-width: 0;
   outline: none;
 
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.textMuted};
-    opacity: 0.4;
-  }
-
   &::-webkit-calendar-picker-indicator {
     opacity: 0;
     cursor: pointer;
@@ -337,6 +340,32 @@ export const FieldInput = styled.input<{ $variant?: 'label' | 'value'; $isDate?:
     left: 0.5rem;
     bottom: 0.75rem;
     height: 1.5rem;
+  }
+`;
+
+export const FetchingIndicator = styled(motion.div)`
+  position: absolute;
+  right: 2.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${({ theme }) => theme.colors.primary};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+  z-index: 2;
+
+  svg {
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 `;
 
