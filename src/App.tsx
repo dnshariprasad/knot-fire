@@ -45,14 +45,14 @@ const NotesGrid = styled.div<{ $viewMode?: 'grid' | 'list' }>`
   ${({ $viewMode }) => $viewMode === 'list' ? `
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem;
     
     & > * {
       margin-bottom: 0 !important;
     }
   ` : `
     column-count: 3;
-    column-gap: 1rem;
+    column-gap: 0.5rem;
     
     @media (max-width: 1100px) {
       column-count: 2;
@@ -60,12 +60,12 @@ const NotesGrid = styled.div<{ $viewMode?: 'grid' | 'list' }>`
     
     @media (max-width: 640px) {
       column-count: 2;
-      column-gap: 0.75rem;
+      column-gap: 0.5rem;
     }
 
     & > * {
       break-inside: avoid;
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
     }
   `}
   width: 100%;

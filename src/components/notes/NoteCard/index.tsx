@@ -2,8 +2,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Note } from '../../../types';
 import { 
-  Tag as TagIcon, MapPin, Hash, 
-  Calendar, Globe, User as UserIcon, Lock as LockIcon, ExternalLink,
+  Hash, 
+  User as UserIcon, Lock as LockIcon,
   Share2
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
@@ -24,15 +24,6 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
   const collaboratorsCount = note.sharedWithUids?.length || 0;
 
 
-  const getFieldIcon = (label: string) => {
-    const l = label.toLowerCase();
-    if (l.includes('link') || l.includes('url')) return <Globe size={14} />;
-    if (l.includes('date') || l.includes('dob')) return <Calendar size={14} />;
-    if (l.includes('loc')) return <MapPin size={14} />;
-    if (l.includes('id') || l.includes('user')) return <UserIcon size={14} />;
-    if (l.includes('pass') || l.includes('pwd')) return <LockIcon size={14} />;
-    return <TagIcon size={14} />;
-  };
 
   return (
     <S.Card
@@ -45,8 +36,34 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
       <S.Header>
         {note.title && <S.Title $blurred={note.isPrivate}>{note.title}</S.Title>}
         {!note.title && !note.isPrivate && <div style={{ flex: 1 }} />}
-        
-        <div style={{ display: 'flex', gap: '0.4rem', marginLeft: 'auto', alignItems: 'center' }}>
+      </S.Header>
+
+      {(note.isPrivate || note.content) && (
+        <S.Content $blurred={note.isPrivate}>
+          {note.isPrivate ? t('notes.privateHidden') : note.content}
+        </S.Content>
+      )}
+
+      {note.tags.length > 0 && (
+        <S.TagContainer $blurred={note.isPrivate}>
+          {note.tags.map(tag => (
+            <S.Tag key={tag} onClick={(e) => { e.stopPropagation(); onToggleTag(tag); }}>
+              <Hash size={8} /> {tag}
+            </S.Tag>
+          ))}
+        </S.TagContainer>
+      )}
+
+
+      <S.Footer $blurred={note.isPrivate}>
+        <S.DateInfo>
+          {new Date(note.updatedAt || note.createdAt).toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric'
+          })}
+        </S.DateInfo>
+
+        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
           {isSharedWithMe && (
             <S.FieldBadge 
               $clickable
@@ -70,51 +87,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
             <Share2 size={9} /> {collaboratorsCount > 0 ? collaboratorsCount : ''}
           </S.FieldBadge>
         </div>
-      </S.Header>
-
-      {(note.isPrivate || note.content) && (
-        <S.Content $blurred={note.isPrivate}>
-          {note.isPrivate ? t('notes.privateHidden') : note.content}
-        </S.Content>
-      )}
-
-      {note.tags.length > 0 && (
-        <S.TagContainer $blurred={note.isPrivate}>
-          {note.tags.map(tag => (
-            <S.Tag key={tag} onClick={(e) => { e.stopPropagation(); onToggleTag(tag); }}>
-              <Hash size={10} /> {tag}
-            </S.Tag>
-          ))}
-        </S.TagContainer>
-      )}
-
-      {note.customFields.length > 0 && (
-        <S.FieldsGrid $blurred={note.isPrivate}>
-          {note.customFields.map((field, idx) => (
-            <S.FieldItem key={idx}>
-              {getFieldIcon(field.label)}
-              <span>
-                {field.label.toLowerCase().includes('pass') ? (
-                  '••••••••'
-                ) : field.value.startsWith('http') ? (
-                  <a 
-                    href={field.value} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    onClick={(e) => e.stopPropagation()}
-                    style={{ color: 'inherit', textDecoration: 'none' }}
-                  >
-                    {field.value}
-                  </a>
-                ) : (
-                  field.value
-                )}
-              </span>
-              {field.value.startsWith('http') && <ExternalLink size={10} style={{ opacity: 0.5 }} />}
-            </S.FieldItem>
-          ))}
-        </S.FieldsGrid>
-      )}
+      </S.Footer>
 
       {note.isPrivate && (
         <S.PrivateOverlay>

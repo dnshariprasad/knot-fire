@@ -6,15 +6,15 @@ export const Card = styled(motion.div)`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
-  padding: 1rem;
+  padding: 0.375rem 0.5rem 0.5rem 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
   break-inside: avoid;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   width: 100%;
   overflow: hidden;
 
@@ -120,14 +120,14 @@ export const TagContainer = styled.div<{ $blurred?: boolean }>`
 export const Tag = styled.span`
   background: ${({ theme }) => theme.colors.surfaceLight};
   color: ${({ theme }) => theme.colors.text};
-  padding: 0.125rem 0.5rem;
-  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -232,4 +232,21 @@ export const FieldBadge = styled.div<{ $variant?: 'primary'; $clickable?: boolea
       transform: translateY(-1px);
     }
   `}
+`;
+
+export const Footer = styled.div<{ $blurred?: boolean }>`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.25rem -0.5rem -0.5rem -0.5rem;
+  padding: 0.5rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  filter: ${({ $blurred }) => $blurred ? 'blur(4px)' : 'none'};
+  opacity: ${({ $blurred }) => $blurred ? 0.3 : 1};
+`;
+
+export const DateInfo = styled.span`
+  font-size: 0.7rem;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-weight: 500;
 `;
