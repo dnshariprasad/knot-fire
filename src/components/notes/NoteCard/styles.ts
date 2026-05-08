@@ -33,8 +33,8 @@ export const Header = styled.div`
 `;
 
 export const Title = styled.h3<{ $blurred?: boolean }>`
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: ${({ theme }) => theme.colors.text};
   white-space: nowrap;
   overflow: hidden;

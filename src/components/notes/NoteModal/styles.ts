@@ -44,7 +44,7 @@ export const Modal = styled(motion.div)`
 `;
 
 export const Header = styled.div`
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   justify-content: space-between;
@@ -52,7 +52,7 @@ export const Header = styled.div`
 `;
 
 export const Title = styled.h2`
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: ${({ theme }) => theme.colors.text};
   display: flex;
@@ -64,11 +64,11 @@ export const Title = styled.h2`
 `;
 
 export const Body = styled.div`
-  padding: 1.5rem;
+  padding: 1.25rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 `;
 
 export const FormGroup = styled.div`
@@ -527,7 +527,7 @@ export const ViewHeader = styled.div`
 `;
 
 export const ViewTitle = styled.h1`
-  font-size: 1.75rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: ${({ theme }) => theme.colors.text};
 `;
@@ -548,10 +548,10 @@ export const ViewTags = styled.div`
 export const TagChip = styled.span`
   background: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.text};
-  padding: 0.25rem 0.75rem;
+  padding: 0.15rem 0.5rem;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  font-size: 0.875rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   display: flex;
   align-items: center;

@@ -26,8 +26,8 @@ const SkeletonBase = styled.div`
 const SkeletonCard = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.lg};
-  padding: 1rem;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  padding: 0.375rem 0.5rem 0.5rem 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -37,23 +37,44 @@ const SkeletonCard = styled.div`
 const SkeletonTitle = styled(SkeletonBase)`
   height: 1.25rem;
   width: 60%;
+  margin-bottom: 0.25rem;
 `;
 
 const SkeletonLine = styled(SkeletonBase)`
-  height: 0.875rem;
+  height: 0.75rem;
   width: 100%;
 `;
 
 const SkeletonTags = styled.div`
   display: flex;
-  gap: 0.5rem;
-  margin-top: auto;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
 `;
 
 const SkeletonTag = styled(SkeletonBase)`
-  height: 1.25rem;
+  height: 1rem;
+  width: 2.5rem;
+  border-radius: 4px;
+`;
+
+const SkeletonFooter = styled.div`
+  margin: auto -0.5rem -0.5rem -0.5rem;
+  padding: 0.4rem 0.5rem 0.3rem 0.5rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const SkeletonDate = styled(SkeletonBase)`
+  height: 0.75rem;
   width: 3rem;
-  border-radius: 12px;
+`;
+
+const SkeletonBadge = styled(SkeletonBase)`
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 6px;
 `;
 
 export const NoteSkeleton: React.FC = () => {
@@ -66,6 +87,10 @@ export const NoteSkeleton: React.FC = () => {
         <SkeletonTag />
         <SkeletonTag />
       </SkeletonTags>
+      <SkeletonFooter>
+        <SkeletonDate />
+        <SkeletonBadge />
+      </SkeletonFooter>
     </SkeletonCard>
   );
 };

@@ -18,13 +18,13 @@ export const LockCard = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  padding: 2.5rem;
+  padding: 2rem;
   width: 100%;
   max-width: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
   box-shadow: ${({ theme }) => theme.shadows.lg};
   text-align: center;
 `;

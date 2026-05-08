@@ -54,7 +54,7 @@ export const ModalHandle = styled.div`
 `;
 
 export const Header = styled.div`
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   justify-content: space-between;
@@ -72,13 +72,13 @@ export const Title = styled.h2`
 
 export const TabList = styled.div`
   display: flex;
-  padding: 0 1.5rem;
+  padding: 0 1.25rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.surfaceLight + '50'};
 `;
 
 export const Tab = styled.button<{ $active: boolean }>`
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   font-size: 0.875rem;
   font-weight: 700;
   color: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.textMuted};
@@ -92,10 +92,10 @@ export const Tab = styled.button<{ $active: boolean }>`
 `;
 
 export const Body = styled.div`
-  padding: 1.5rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
   max-height: 70vh;
   overflow-y: auto;
 `;

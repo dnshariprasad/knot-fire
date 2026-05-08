@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 
 export const FABContainer = styled(motion.button)`
   position: fixed;
-  right: 2rem;
-  bottom: 2rem;
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  width: 48px;
+  height: 48px;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
   background: ${({ theme }) => theme.colors.primary};
   color: white;
   display: flex;
@@ -19,8 +19,8 @@ export const FABContainer = styled(motion.button)`
   z-index: 1000;
   
   @media (max-width: 768px) {
-    right: 1.5rem;
-    bottom: 1.5rem;
+    right: 1rem;
+    bottom: 1rem;
   }
   
   &:hover {

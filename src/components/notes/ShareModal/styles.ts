@@ -43,7 +43,7 @@ export const Modal = styled(motion.div)`
 `;
 
 export const Header = styled.div`
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   justify-content: space-between;
@@ -60,10 +60,10 @@ export const Title = styled.h2`
 `;
 
 export const Content = styled.div`
-  padding: 1.5rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
   overflow-y: auto;
 `;
 

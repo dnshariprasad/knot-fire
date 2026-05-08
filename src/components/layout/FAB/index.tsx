@@ -15,7 +15,7 @@ export const FAB: React.FC<FABProps> = ({ onClick }) => {
       onClick={onClick}
       aria-label="Add new note"
     >
-      <Plus size={28} />
+      <Plus size={24} />
     </S.FABContainer>
   );
 };

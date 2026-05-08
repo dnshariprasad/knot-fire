@@ -21,7 +21,7 @@ export const SearchRow = styled.div`
   display: flex;
   align-items: stretch;
   gap: 0.625rem;
-  height: 36px;
+  height: 32px;
 `;
 
 export const SearchWrapper = styled.div`
@@ -37,9 +37,9 @@ export const SearchInput = styled.input`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  padding: 0 0.875rem 0 2.5rem;
+  padding: 0 0.75rem 0 2.25rem;
   color: ${({ theme }) => theme.colors.text};
-  font-size: 0.85rem;
+  font-size: 0.8125rem;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -56,16 +56,16 @@ export const SearchIcon = styled(Search)`
   top: 50%;
   transform: translateY(-50%);
   color: ${({ theme }) => theme.colors.textMuted};
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 `;
 
 export const FilterButton = styled.button<{ $active?: boolean }>`
   background: ${({ theme, $active }) => $active ? theme.colors.primary + '20' : theme.colors.surface};
   border: 1px solid ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
   color: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.textMuted};
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   display: flex;
   align-items: center;
@@ -75,8 +75,8 @@ export const FilterButton = styled.button<{ $active?: boolean }>`
   flex-shrink: 0;
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
 
   &:hover {
@@ -91,8 +91,8 @@ export const ToolbarButton = styled.button`
   border: 1px solid ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.textMuted};
   padding: 0;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   display: flex;
   align-items: center;
@@ -102,8 +102,8 @@ export const ToolbarButton = styled.button`
   flex-shrink: 0;
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
 
   &:hover {

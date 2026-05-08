@@ -46,7 +46,6 @@ export const Modal: React.FC<ModalProps> = ({
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <S.ModalHandle />
             <S.Header>
               <S.Title>{title}</S.Title>
               {showCloseButton && (

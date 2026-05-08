@@ -40,22 +40,10 @@ export const ModalContainer = styled(motion.div)<{ $maxWidth?: string }>`
   }
 `;
 
-export const ModalHandle = styled.div`
-  display: none;
-  width: 40px;
-  height: 4px;
-  background: ${({ theme }) => theme.colors.border};
-  border-radius: 2px;
-  margin: 12px auto 0;
-  flex-shrink: 0;
-
-  @media (max-width: 768px) {
-    display: block;
-  }
-`;
+/* ModalHandle removed per user request */
 
 export const Header = styled.div`
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   justify-content: space-between;
@@ -72,7 +60,7 @@ export const Title = styled.h2`
 `;
 
 export const Body = styled.div`
-  padding: 1.5rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
   max-height: 80vh;

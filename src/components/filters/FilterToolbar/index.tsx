@@ -102,7 +102,6 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <S.SheetHandle />
               <S.SheetHeader>
                 <h3>{t('app.exploreTags')}</h3>
                 <S.IconButton onClick={() => {
