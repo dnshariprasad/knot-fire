@@ -6,12 +6,12 @@ export const Card = styled(motion.div)`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  padding: 0.375rem 0.5rem 0.5rem 0.5rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   break-inside: avoid;
   margin-bottom: 0.75rem;
@@ -20,8 +20,8 @@ export const Card = styled(motion.div)`
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
-    transform: translateY(-2px);
-    box-shadow: ${({ theme }) => theme.shadows.md};
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 `;
 
@@ -33,8 +33,8 @@ export const Header = styled.div`
 `;
 
 export const Title = styled.h3<{ $blurred?: boolean }>`
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
   color: ${({ theme }) => theme.colors.text};
   white-space: nowrap;
   overflow: hidden;
@@ -120,11 +120,11 @@ export const TagContainer = styled.div<{ $blurred?: boolean }>`
 export const Tag = styled.span`
   background: ${({ theme }) => theme.colors.surfaceLight};
   color: ${({ theme }) => theme.colors.text};
-  padding: 0.1rem 0.4rem;
+  padding: 0.15rem 0.45rem;
   border-radius: 4px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  font-size: 0.625rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 0.2rem;
@@ -140,10 +140,8 @@ export const Tag = styled.span`
 export const FieldsGrid = styled.div<{ $blurred?: boolean }>`
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.5rem;
   margin-top: 0.25rem;
-  padding-top: 0.5rem;
-  border-top: 1px dashed ${({ theme }) => theme.colors.border};
   filter: ${({ $blurred }) => $blurred ? 'blur(6px)' : 'none'};
   opacity: ${({ $blurred }) => $blurred ? 0.2 : 1};
 `;
@@ -217,7 +215,7 @@ export const FieldBadge = styled.div<{ $variant?: 'primary'; $clickable?: boolea
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 800;
   min-height: 22px;
   min-width: 22px;
@@ -238,15 +236,24 @@ export const Footer = styled.div<{ $blurred?: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0.25rem -0.5rem -0.5rem -0.5rem;
-  padding: 0.4rem 0.5rem 0.3rem 0.5rem;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
   filter: ${({ $blurred }) => $blurred ? 'blur(4px)' : 'none'};
   opacity: ${({ $blurred }) => $blurred ? 0.3 : 1};
 `;
 
 export const DateInfo = styled.span`
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: ${({ theme }) => theme.colors.textMuted};
-  font-weight: 500;
+  font-weight: 600;
+`;
+
+export const HeaderSpacer = styled.div`
+  flex: 1;
+`;
+
+export const BadgeGroup = styled.div`
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
 `;

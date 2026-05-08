@@ -35,7 +35,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
     >
       <S.Header>
         {note.title && <S.Title $blurred={note.isPrivate}>{note.title}</S.Title>}
-        {!note.title && !note.isPrivate && <div style={{ flex: 1 }} />}
+        {!note.title && !note.isPrivate && <S.HeaderSpacer />}
       </S.Header>
 
       {(note.isPrivate || note.content) && (
@@ -63,7 +63,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
           })}
         </S.DateInfo>
 
-        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+        <S.BadgeGroup>
           {isSharedWithMe ? (
             <>
               <S.FieldBadge 
@@ -101,7 +101,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
               </S.FieldBadge>
             )
           )}
-        </div>
+        </S.BadgeGroup>
       </S.Footer>
 
       {note.isPrivate && (

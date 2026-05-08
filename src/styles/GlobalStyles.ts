@@ -12,14 +12,14 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   body {
-    font-family: ${({ theme }) => theme.typography.fontFamily.sans};
+    font-family: 'Outfit', ${({ theme }) => theme.typography.fontFamily.sans};
     background-color: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.text};
-    line-height: 1.5;
-    letter-spacing: 0.18px;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
+    transition: background-color 0.3s ease;
   }
 
   #root {
@@ -57,19 +57,23 @@ export const GlobalStyles = createGlobalStyle`
 
   /* Custom Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: ${({ theme }) => theme.colors.background};
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: ${({ theme }) => theme.colors.surfaceLight};
-    border-radius: 4px;
+    background: ${({ theme }) => theme.colors.border};
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: ${({ theme }) => theme.colors.border};
+    background: ${({ theme }) => theme.colors.textMuted};
+    background-clip: content-box;
   }
 `;

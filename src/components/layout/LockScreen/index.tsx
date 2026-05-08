@@ -30,7 +30,7 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock, onSkip }) => {
           <S.LockDesc>{t('security.lockDescription')}</S.LockDesc>
         </S.ViewHeader>
         
-        <form onSubmit={handleUnlock} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <S.UnlockForm onSubmit={handleUnlock}>
           <S.KeyInput 
             type="password" 
             placeholder={t('security.keyPlaceholder')} 
@@ -41,7 +41,7 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock, onSkip }) => {
           <S.UnlockButton type="submit">
             <Key size={18} /> {t('security.unlockData')}
           </S.UnlockButton>
-        </form>
+        </S.UnlockForm>
 
         {onSkip && (
           <S.SkipButton onClick={onSkip}>

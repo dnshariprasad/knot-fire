@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { LogOut, User as UserIcon, Moon, Sun, ChevronDown, Settings } from 'lucide-react';
+import { LogOut, User as UserIcon, Moon, Sun, Settings } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +33,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({ onThemeToggle, onSec
         <S.Avatar>
           {user?.email?.charAt(0).toUpperCase() || <UserIcon size={16} />}
         </S.Avatar>
-        <ChevronDown size={14} color="#94a3b8" />
+        <S.DropdownChevron size={14} />
       </S.Trigger>
 
       <AnimatePresence>
@@ -44,7 +44,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({ onThemeToggle, onSec
             exit={{ opacity: 0, y: -10 }}
           >
             <S.UserInfo>
-              <span style={{ fontWeight: 600 }}>{t('auth.signedInAs')}</span>
+              <S.DropdownLabel>{t('auth.signedInAs')}</S.DropdownLabel>
               <S.UserEmail>{user?.email}</S.UserEmail>
             </S.UserInfo>
             

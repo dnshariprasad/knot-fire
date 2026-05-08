@@ -198,13 +198,21 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
   };
 
   const modalTitle = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
-      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+    <S.ModalTitleWrapper>
+      <S.ModalTitleText>
         {isEditing ? (note ? t('notes.editNote') : t('notes.createNote')) : t('notes.notePreview')}
-      </span>
-      {isPrivate && !isVerified && <LockIcon size={16} style={{ flexShrink: 0, color: '#6366f1' }} />}
-      {isPrivate && isVerified && <LockIcon size={16} style={{ flexShrink: 0, opacity: 0.5 }} />}
-    </div>
+      </S.ModalTitleText>
+      {isPrivate && !isVerified && (
+        <S.LockIconWrapper $primary>
+          <LockIcon size={16} />
+        </S.LockIconWrapper>
+      )}
+      {isPrivate && isVerified && (
+        <S.LockIconWrapper $revealed>
+          <LockIcon size={16} />
+        </S.LockIconWrapper>
+      )}
+    </S.ModalTitleWrapper>
   );
 
   return (
@@ -216,33 +224,32 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
     >
       {!isVerified ? (
         <S.LockView>
-          <S.LockIconWrapper>
+          <S.LockIconHero>
             <LockIcon size={32} />
-          </S.LockIconWrapper>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'center' }}>
-            <h3 style={{ fontSize: '1.25rem' }}>{t('notes.lockedTitle')}</h3>
-            <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>{t('notes.lockedMessage')}</p>
-          </div>
-          <form onSubmit={handleVerify} style={{ width: '100%', maxWidth: '240px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <S.Input 
+          </S.LockIconHero>
+          <S.LockContent>
+            <S.LockTitleText>{t('notes.lockedTitle')}</S.LockTitleText>
+            <S.LockDescriptionText>{t('notes.lockedMessage')}</S.LockDescriptionText>
+          </S.LockContent>
+          <S.VerifyForm onSubmit={handleVerify}>
+            <S.UnlockInput 
               type="password" 
               placeholder={t('common.pin')} 
               maxLength={4}
               value={verifyPin}
               onChange={(e) => setVerifyPin(e.target.value.replace(/\D/g, ''))}
-              style={{ textAlign: 'center', letterSpacing: '0.5rem', fontSize: '1.5rem', fontWeight: 800 }}
               autoFocus
             />
-            <S.Button type="submit" $variant="primary" style={{ height: '48px' }}>
+            <S.UnlockButton type="submit" $variant="primary">
               <Key size={18} /> {t('notes.unlockNote')}
-            </S.Button>
-          </form>
+            </S.UnlockButton>
+          </S.VerifyForm>
         </S.LockView>
       ) : isEditing ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <S.EditContainer>
           <S.DynamicFieldsSection>
             <S.SectionHeader>
-              <S.Label style={{ margin: 0 }}><PlusCircle size={14} /> {t('notes.additionalFields')}</S.Label>
+              <S.HeaderLabel><PlusCircle size={14} /> {t('notes.additionalFields')}</S.HeaderLabel>
               <S.QuickActionToolbar>
                 <S.QuickActionButton onClick={() => setCustomFields([...customFields, { label: 'Title', value: '' }])}>
                   <Type size={12} /> {t('notes.titleLabel')}
@@ -302,7 +309,6 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                       e.target.style.height = 'auto';
                       e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
-                    style={{ minHeight: '60px', overflow: 'hidden' }}
                   />
                 ) : (
                   <S.FieldInput 
@@ -319,26 +325,14 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                   />
                 )}
                 {field.label.toLowerCase().includes('date') && (
-                  <Calendar 
-                    size={16} 
-                    style={{ 
-                      position: 'absolute', 
-                      left: '1rem', 
-                      top: '68%',
-                      transform: 'translateY(-50%)',
-                      pointerEvents: 'none',
-                      color: '#6366f1',
-                      opacity: 0.9
-                    }} 
-                  />
+                  <S.DateIconWrapper size={16} />
                 )}
-                <S.IconButton 
+                <S.AbsoluteIconButton 
                   onClick={() => setCustomFields(customFields.filter((_, i) => i !== idx))} 
                   $variant="danger"
-                  style={{ position: 'absolute', top: '4px', right: '4px', padding: '0.25rem' }}
                 >
                   <Trash2 size={14} />
-                </S.IconButton>
+                </S.AbsoluteIconButton>
               </S.FieldRow>
             ))}
           </S.DynamicFieldsSection>
@@ -407,45 +401,44 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
           </S.FormGroup>
 
 
-          <S.FormGroup style={{ padding: '1.25rem', background: '#f8fafc05', borderRadius: '12px', border: '1px solid #e2e8f010' }}>
-            <S.Label style={{ marginBottom: '0.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: isPrivate ? '#6366f1' : 'inherit' }}>
+          <S.PrivacySection>
+            <S.Label>
+              <S.PrivacyLabel $active={isPrivate}>
                 <LockIcon size={14} /> {t('notes.privateNote')}
-              </div>
-              <div style={{ marginLeft: 'auto' }}>
-                <S.Toggle $active={isPrivate} onClick={() => setIsPrivate(!isPrivate)} />
-              </div>
+              </S.PrivacyLabel>
+              <S.Toggle $active={isPrivate} onClick={() => setIsPrivate(!isPrivate)} />
             </S.Label>
-            <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: isPrivate ? '1rem' : 0 }}>
+            <S.PrivacyDesc $hasMargin={isPrivate}>
               {t('notes.privateNoteDescription')}
-            </p>
+            </S.PrivacyDesc>
             {isPrivate && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
-                <S.Label style={{ fontSize: '0.65rem' }}>{t('notes.setSecurityPin')}</S.Label>
-                <S.Input 
-                  type="password" 
-                  maxLength={4} 
-                  placeholder="••••" 
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                  style={{ marginTop: '0.4rem', textAlign: 'center', letterSpacing: '0.5rem', fontSize: '1.25rem' }}
-                />
+                <S.PINInputWrapper>
+                  <S.PINLabel>{t('notes.setSecurityPin')}</S.PINLabel>
+                  <S.PINInput 
+                    type="password" 
+                    maxLength={4} 
+                    placeholder="••••" 
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                  />
+                </S.PINInputWrapper>
               </motion.div>
             )}
-          </S.FormGroup>
+          </S.PrivacySection>
           <S.StickyFooter>
-            <S.Button $variant="outline" onClick={onClose} style={{ flex: 1, height: '48px' }}>
+            <S.Button $variant="outline" onClick={onClose}>
               {t('common.cancel')}
             </S.Button>
-            <S.Button $variant="primary" onClick={handleSave} style={{ flex: 2, height: '48px' }}>
+            <S.Button $variant="primary" onClick={handleSave}>
               {t('notes.saveChanges')}
             </S.Button>
           </S.StickyFooter>
-        </div>
+        </S.EditContainer>
       ) : (
-        <S.ViewContent>
+        <S.ViewContainer>
           {(title || tagList.length > 0) && (
-            <S.ViewHeader>
+            <S.ViewHeaderWrapper>
               {title && <S.ViewTitle>{title}</S.ViewTitle>}
               {tagList.length > 0 && (
                 <S.ViewTags>
@@ -456,16 +449,16 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                   ))}
                 </S.ViewTags>
               )}
-            </S.ViewHeader>
+            </S.ViewHeaderWrapper>
           )}
 
           {customFields.length > 0 && (
             <S.CustomFieldDisplay>
               {customFields.map((field, idx) => (
                 <S.FieldCard key={idx}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <S.CardHeader>
                     <S.FieldLabel>{field.label}</S.FieldLabel>
-                    <S.IconButton 
+                    <S.ActionIconButton 
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(field.value);
@@ -474,52 +467,42 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                           toast.error(t('notes.copyFailed'));
                         }
                       }}
-                      style={{ padding: '0.25rem' }}
                     >
                       <Copy size={12} />
-                    </S.IconButton>
-                  </div>
+                    </S.ActionIconButton>
+                    </S.CardHeader>
                   <S.FieldValue>
-                    {field.label.toLowerCase().includes('location') && <MapPin size={14} color="#94a3b8" />}
-                    {field.label.toLowerCase().includes('id') && <UserIcon size={14} color="#94a3b8" />}
-                    {field.label.toLowerCase().includes('pass') && <LockIcon size={14} color="#94a3b8" />}
-                    {field.label.toLowerCase().includes('pass') && !revealedFields[idx] ? (
-                      '••••••••'
-                    ) : isUrl(field.value) ? (
-                      <a href={field.value} target="_blank" rel="noopener noreferrer">
-                        {field.value} <ExternalLink size={12} />
-                      </a>
-                    ) : (
-                      field.value
-                    )}
+                    <S.FieldValueWrapper>
+                      {field.label.toLowerCase().includes('location') && <MapPin size={14} color="#94a3b8" />}
+                      {field.label.toLowerCase().includes('id') && <UserIcon size={14} color="#94a3b8" />}
+                      {field.label.toLowerCase().includes('pass') && <LockIcon size={14} color="#94a3b8" />}
+                      {field.label.toLowerCase().includes('pass') && !revealedFields[idx] ? (
+                        '••••••••'
+                      ) : isUrl(field.value) ? (
+                        <a href={field.value} target="_blank" rel="noopener noreferrer">
+                          {field.value} <ExternalLink size={12} />
+                        </a>
+                      ) : (
+                        field.value
+                      )}
 
-                    {(field.label.toLowerCase().includes('date') || field.label.toLowerCase().includes('dob')) && (() => {
-                      const period = getPeriodString(field.value);
-                      return period ? (
-                        <span style={{ 
-                          fontSize: '0.65rem', 
-                          color: '#6366f1', 
-                          marginLeft: 'auto', 
-                          fontWeight: 800,
-                          background: '#6366f112',
-                          padding: '0.15rem 0.4rem',
-                          borderRadius: '4px',
-                          border: '1px solid #6366f120',
-                          whiteSpace: 'nowrap'
-                        }}>
-                          {period}
-                        </span>
-                      ) : null;
-                    })()}
-                    
-                    {field.label.toLowerCase().includes('pass') && (
-                      <S.IconButton 
-                        onClick={() => setRevealedFields(prev => ({ ...prev, [idx]: !prev[idx] }))}
-                        style={{ padding: '0.25rem', marginLeft: 'auto' }}
-                      >
-                        {revealedFields[idx] ? <EyeOff size={14} /> : <Eye size={14} />}
-                      </S.IconButton>
-                    )}
+                      {(field.label.toLowerCase().includes('date') || field.label.toLowerCase().includes('dob')) && (() => {
+                        const period = getPeriodString(field.value);
+                        return period ? (
+                          <S.PeriodBadge>
+                            {period}
+                          </S.PeriodBadge>
+                        ) : null;
+                      })()}
+                      
+                      {field.label.toLowerCase().includes('pass') && (
+                        <S.RevealIconButton 
+                          onClick={() => setRevealedFields(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                        >
+                          {revealedFields[idx] ? <EyeOff size={14} /> : <Eye size={14} />}
+                        </S.RevealIconButton>
+                      )}
+                    </S.FieldValueWrapper>
                   </S.FieldValue>
                 </S.FieldCard>
               ))}
@@ -528,7 +511,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
 
           {content && <S.ViewBody>{content}</S.ViewBody>}
 
-          <div style={{ marginTop: 'auto' }}>
+          <S.FooterSpacer>
             {note && (
               <S.Timestamp title={t('notes.createdDate')}>
                 <Calendar size={14} />
@@ -539,14 +522,14 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
               </S.Timestamp>
             )}
             <S.Footer>
-              <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
+              <S.FooterActions>
                 {!isEditing && isVerified && (
                   <>
                     <DropdownMenu.Root>
                       <DropdownMenu.Trigger asChild>
-                        <S.IconButton $variant="outline" style={{ width: '48px', height: '42px' }}>
+                        <S.FixedActionButton $variant="outline">
                           <MoreVertical size={20} />
-                        </S.IconButton>
+                        </S.FixedActionButton>
                       </DropdownMenu.Trigger>
                       <DropdownMenu.Portal>
                         <S.Popover sideOffset={8} align="end">
@@ -561,18 +544,18 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                         </S.Popover>
                       </DropdownMenu.Portal>
                     </DropdownMenu.Root>
-                    <S.IconButton $variant="outline" onClick={handleShare} style={{ width: '48px', height: '42px' }}>
+                    <S.FixedActionButton $variant="outline" onClick={handleShare}>
                       <Share2 size={20} />
-                    </S.IconButton>
+                    </S.FixedActionButton>
                   </>
                 )}
-                <S.Button $variant="primary" onClick={() => setIsEditing(true)} style={{ flex: 1 }}>
+                <S.Button $variant="primary" onClick={() => setIsEditing(true)}>
                   <Edit2 size={18} /> {t('notes.editNote')}
                 </S.Button>
-              </div>
+              </S.FooterActions>
             </S.Footer>
-          </div>
-        </S.ViewContent>
+          </S.FooterSpacer>
+        </S.ViewContainer>
       )}
 
       {showDeleteConfirm && note && (

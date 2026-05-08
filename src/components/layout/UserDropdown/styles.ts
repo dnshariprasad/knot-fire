@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 
 export const Container = styled.div`
   position: relative;
@@ -75,4 +76,15 @@ export const MenuItem = styled.button<{ $danger?: boolean }>`
   &:hover {
     background: ${({ theme }) => theme.colors.surfaceLight};
   }
+`;
+
+export const DropdownLabel = styled.span`
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: ${({ theme }) => theme.colors.text};
+  margin-bottom: 0.125rem;
+`;
+
+export const DropdownChevron = styled(ChevronDown)`
+  color: ${({ theme }) => theme.colors.textMuted};
 `;

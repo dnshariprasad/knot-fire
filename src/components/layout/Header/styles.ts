@@ -1,25 +1,21 @@
 import styled from 'styled-components';
 
 export const HeaderContainer = styled.header`
-  background: ${({ theme }) => theme.colors.background};
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  transition: all 0.3s ease;
+  background: transparent;
   width: 100%;
 `;
 
 export const HeaderContent = styled.div<{ $viewMode?: 'grid' | 'list' }>`
   max-width: ${({ $viewMode }) => $viewMode === 'list' ? '800px' : '1200px'};
   margin: 0 auto;
-  padding: 0.75rem 2rem;
+  padding: 2rem 1.5rem 1rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
 
   @media (max-width: 768px) {
-    padding: 0.5rem 1rem;
+    padding: 1.5rem 1rem 0.5rem 1rem;
   }
 `;
 
@@ -32,16 +28,19 @@ export const LeftSection = styled.div`
 export const Logo = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.secondary});
+  gap: 0.75rem;
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.text}, ${({ theme }) => theme.colors.primary});
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   cursor: pointer;
 
   svg {
     stroke: ${({ theme }) => theme.colors.primary};
+    width: 28px;
+    height: 28px;
   }
 `;
 

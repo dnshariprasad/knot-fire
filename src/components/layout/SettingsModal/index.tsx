@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Lock, Unlock, CheckCircle2, Settings, Globe } from 'lucide-react';
+import { Lock, Unlock, CheckCircle2, Settings, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCrypto } from '../../../context/CryptoContext';
 import { Modal } from '../../common/Modal';
@@ -59,17 +59,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
         </S.Tab>
       </S.TabList>
 
-      <div style={{ marginTop: '1.5rem' }}>
+      <S.ContentWrapper>
         {activeTab === 'general' ? (
           <S.Section>
             <S.SectionTitle>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <S.TitleIconWrapper>
                 <Globe size={16} /> {t('settings.language')}
-              </div>
+              </S.TitleIconWrapper>
             </S.SectionTitle>
-            <p style={{ fontSize: '0.8125rem', color: '#64748b' }}>
+            <S.DescriptionText>
               {t('settings.selectLanguage')}
-            </p>
+            </S.DescriptionText>
             <S.LanguageGrid>
               <S.LanguageButton 
                 $active={i18n.language === 'en'} 
@@ -88,7 +88,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
             </S.LanguageGrid>
           </S.Section>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <S.SecurityList>
             <S.Section>
               <S.SectionTitle>{t('security.encryptionStatus')}</S.SectionTitle>
               <S.StatusCard $active={!!masterKey}>
@@ -99,14 +99,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                   <span>{masterKey ? t('security.statusActive') : t('security.statusDisabled')}</span>
                   <span>{masterKey ? t('security.statusActiveDesc') : t('security.statusDisabledDesc')}</span>
                 </S.StatusText>
-                {masterKey && <CheckCircle2 size={20} color="#10b981" style={{ marginLeft: 'auto' }} />}
+                {masterKey && (
+                  <S.SuccessIcon>
+                    <CheckCircle2 size={20} />
+                  </S.SuccessIcon>
+                )}
               </S.StatusCard>
             </S.Section>
 
             {masterKey ? (
               <S.Section>
                 <S.WarningBox>
-                  <ShieldAlert size={18} style={{ flexShrink: 0 }} />
+                  <S.WarningIcon size={18} />
                   <div>{t('security.disableWarning')}</div>
                 </S.WarningBox>
                 <S.Button $variant="danger" onClick={handleDisable}>
@@ -116,10 +120,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
             ) : isEnabling ? (
               <S.Section>
                 <S.SectionTitle>{t('security.setMasterKey')}</S.SectionTitle>
-                <p style={{ fontSize: '0.8125rem', color: '#64748b' }}>
+                <S.DescriptionText>
                   {t('security.keyDescription')}
-                </p>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                </S.DescriptionText>
+                <S.InlineFlex>
                   <S.Input 
                     type="password" 
                     placeholder={t('security.keyPlaceholder')} 
@@ -128,7 +132,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                     autoFocus
                   />
                   <S.Button $variant="primary" onClick={handleEnable}>{t('security.enableButton')}</S.Button>
-                </div>
+                </S.InlineFlex>
                 <S.Button $variant="outline" onClick={() => setIsEnabling(false)}>{t('common.cancel')}</S.Button>
               </S.Section>
             ) : (
@@ -139,13 +143,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
 
             <S.Section>
               <S.SectionTitle>{t('security.whatIsE2ee')}</S.SectionTitle>
-              <p style={{ fontSize: '0.8125rem', color: '#64748b', lineHeight: 1.6 }}>
+              <S.DescriptionText>
                 {t('security.e2eeDescription')}
-              </p>
+              </S.DescriptionText>
             </S.Section>
-          </div>
+          </S.SecurityList>
         )}
-      </div>
+      </S.ContentWrapper>
     </Modal>
   );
 };

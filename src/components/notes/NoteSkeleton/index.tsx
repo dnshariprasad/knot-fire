@@ -45,6 +45,14 @@ const SkeletonLine = styled(SkeletonBase)`
   width: 100%;
 `;
 
+const SkeletonLineShort = styled(SkeletonLine)`
+  width: 90%;
+`;
+
+const SkeletonLineShorter = styled(SkeletonLine)`
+  width: 70%;
+`;
+
 const SkeletonTags = styled.div`
   display: flex;
   gap: 0.25rem;
@@ -81,8 +89,8 @@ export const NoteSkeleton: React.FC = () => {
   return (
     <SkeletonCard>
       <SkeletonTitle />
-      <SkeletonLine style={{ width: '90%' }} />
-      <SkeletonLine style={{ width: '70%' }} />
+      <SkeletonLineShort />
+      <SkeletonLineShorter />
       <SkeletonTags>
         <SkeletonTag />
         <SkeletonTag />

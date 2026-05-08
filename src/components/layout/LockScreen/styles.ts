@@ -125,3 +125,10 @@ export const ViewHeader = styled.div`
   flex-direction: column;
   gap: 0.5rem;
 `;
+
+export const UnlockForm = styled.form`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;

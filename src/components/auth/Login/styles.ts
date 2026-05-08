@@ -70,6 +70,7 @@ export const Input = styled.input`
 `;
 
 export const Button = styled.button<{ $variant?: 'primary' | 'outline' }>`
+  width: 100%;
   padding: 0.75rem;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   font-weight: 600;
@@ -134,4 +135,10 @@ export const ErrorMsg = styled.p`
   font-size: 0.875rem;
   text-align: center;
   margin-top: 1rem;
+`;
+
+export const LogoWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
 `;

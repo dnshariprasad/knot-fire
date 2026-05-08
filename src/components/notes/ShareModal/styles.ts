@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import { Mail, ChevronDown } from 'lucide-react';
 
 export const Overlay = styled(motion.div)`
   position: fixed;
@@ -317,4 +318,31 @@ export const IconButton = styled.button<{ $variant?: 'danger' | 'ghost' }>`
   &:hover {
     background: ${({ theme, $variant }) => $variant === 'danger' ? theme.colors.error + '10' : theme.colors.surfaceLight};
   }
+`;
+
+export const ActionGroup = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
+export const ShareInputBox = styled(InputWrapper)`
+  flex: 1;
+`;
+
+export const MailIcon = styled(Mail)`
+  margin-left: 0.5rem;
+  opacity: 0.5;
+`;
+
+export const DropdownIcon = styled(ChevronDown)`
+  opacity: 0.5;
+`;
+
+export const AddButton = styled(Button)`
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 12px;
+  flex-shrink: 0;
 `;

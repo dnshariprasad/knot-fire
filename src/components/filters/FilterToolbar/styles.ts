@@ -5,15 +5,25 @@ import { Search } from 'lucide-react';
 export const ToolbarContainer = styled.div<{ $viewMode?: 'grid' | 'list' }>`
   display: flex;
   flex-direction: column;
-  background: transparent;
-  padding: 1.5rem 2rem 0.25rem 2rem;
+  background: ${({ theme }) => theme.colors.surface + '80'};
+  backdrop-filter: blur(12px);
+  padding: 1rem 1.5rem;
   gap: 0.75rem;
   width: 100%;
   max-width: ${({ $viewMode }) => $viewMode === 'list' ? '800px' : '1200px'};
-  margin: 0 auto;
+  margin: 1rem auto;
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  position: sticky;
+  top: 1rem;
+  z-index: 100;
 
   @media (max-width: 768px) {
-    padding: 1rem 1rem 0.25rem 1rem;
+    margin: 0.5rem;
+    width: calc(100% - 1rem);
+    padding: 0.75rem 1rem;
+    top: 0.5rem;
   }
 `;
 
@@ -21,7 +31,7 @@ export const SearchRow = styled.div`
   display: flex;
   align-items: stretch;
   gap: 0.625rem;
-  height: 32px;
+  height: 36px;
 `;
 
 export const SearchWrapper = styled.div`
@@ -39,7 +49,8 @@ export const SearchInput = styled.input`
   border-radius: ${({ theme }) => theme.borderRadius.md};
   padding: 0 0.75rem 0 2.25rem;
   color: ${({ theme }) => theme.colors.text};
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -64,8 +75,8 @@ export const FilterButton = styled.button<{ $active?: boolean }>`
   background: ${({ theme, $active }) => $active ? theme.colors.primary + '20' : theme.colors.surface};
   border: 1px solid ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
   color: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.textMuted};
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   display: flex;
   align-items: center;
@@ -91,8 +102,8 @@ export const ToolbarButton = styled.button`
   border: 1px solid ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.textMuted};
   padding: 0;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   display: flex;
   align-items: center;
@@ -127,8 +138,8 @@ export const TagChip = styled.button<{ $active?: boolean }>`
   gap: 0.375rem;
   padding: 0.375rem 0.875rem;
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 700;
   background: ${({ theme, $active }) => ($active ? theme.colors.primary : theme.colors.surface)};
   color: ${({ theme, $active }) => ($active ? 'white' : theme.colors.textMuted)};
   border: 1px solid ${({ theme, $active }) => ($active ? theme.colors.primary : theme.colors.border)};
@@ -150,25 +161,52 @@ export const Overlay = styled(motion.div)`
   backdrop-filter: blur(8px);
   z-index: 2000;
 `;
+export const ModalWrapper = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2100;
+  pointer-events: none;
+  padding: 1rem;
+
+  @media (max-width: 768px) {
+    align-items: flex-end;
+    padding: 0;
+  }
+`;
 
 export const BottomSheet = styled(motion.div)`
+  pointer-events: auto;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   background: ${({ theme }) => theme.colors.surface};
   border-top: 1px solid ${({ theme }) => theme.colors.border};
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
   z-index: 2001;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.1), 0 -8px 10px -6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.2);
   
   @media (min-width: 768px) {
-    max-width: 600px;
-    margin: 0 auto;
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 20px;
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    max-height: 70vh;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
   }
 `;
 
@@ -179,6 +217,10 @@ export const SheetHandle = styled.div`
   border-radius: 2px;
   margin: 12px auto;
   flex-shrink: 0;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
 `;
 
 export const SheetHeader = styled.div`
@@ -278,4 +320,14 @@ export const TagSearchInput = styled.div`
     transform: translateY(-50%);
     color: ${({ theme }) => theme.colors.textMuted};
   }
+`;
+
+export const TagsAnimationWrapper = styled(motion.div)`
+  overflow: hidden;
+`;
+
+export const EmptyMessage = styled.p`
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textMuted};
+  padding: 3rem 0;
 `;

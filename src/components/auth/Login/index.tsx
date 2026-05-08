@@ -52,9 +52,9 @@ export const Login: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+        <S.LogoWrapper>
           <img src="/favicon.svg" alt={t('app.logoAlt')} width="64" height="64" />
-        </div>
+        </S.LogoWrapper>
         <S.Title>{t('app.title')}</S.Title>
         <S.Subtitle>{isLogin ? t('auth.welcomeBack') : t('auth.createAccount')}</S.Subtitle>
 
@@ -91,7 +91,6 @@ export const Login: React.FC = () => {
           type="button" 
           $variant="outline" 
           onClick={handleGoogleLogin}
-          style={{ width: '100%' }}
         >
           <svg width="18" height="18" viewBox="0 0 18 18">
             <path

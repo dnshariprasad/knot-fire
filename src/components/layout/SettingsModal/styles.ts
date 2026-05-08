@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import { ShieldAlert } from 'lucide-react';
 
 export const Overlay = styled(motion.div)`
   position: fixed;
@@ -39,19 +40,7 @@ export const Modal = styled(motion.div)`
   }
 `;
 
-export const ModalHandle = styled.div`
-  display: none;
-  width: 40px;
-  height: 4px;
-  background: ${({ theme }) => theme.colors.border};
-  border-radius: 2px;
-  margin: 12px auto 0;
-  flex-shrink: 0;
-
-  @media (max-width: 768px) {
-    display: block;
-  }
-`;
+/* ModalHandle removed per user request */
 
 export const Header = styled.div`
   padding: 1rem 1.25rem;
@@ -258,4 +247,43 @@ export const LanguageButton = styled.button<{ $active: boolean }>`
     border-color: ${({ theme }) => theme.colors.primary};
     background: ${({ theme }) => theme.colors.primary + '05'};
   }
+`;
+
+export const ContentWrapper = styled.div`
+  margin-top: 1.5rem;
+`;
+
+export const TitleIconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+export const DescriptionText = styled.p<{ $hasMargin?: boolean }>`
+  font-size: 0.8125rem;
+  color: ${({ theme }) => theme.colors.textMuted};
+  line-height: 1.6;
+  margin-bottom: ${({ $hasMargin }) => $hasMargin ? '1rem' : 0};
+`;
+
+export const SecurityList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+export const SuccessIcon = styled.div`
+  margin-left: auto;
+  color: #10b981;
+  display: flex;
+  align-items: center;
+`;
+
+export const InlineFlex = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+export const WarningIcon = styled(ShieldAlert)`
+  flex-shrink: 0;
 `;

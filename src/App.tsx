@@ -102,6 +102,7 @@ const AddButton = styled.button`
   gap: 0.5rem;
   border: none;
   cursor: pointer;
+  margin-top: 1rem;
 `;
 
 function App() {
@@ -211,7 +212,7 @@ function App() {
                <EmptyState>
                  <p>{searchQuery || selectedTags.length > 0 ? t('app.noMatch') : t('app.emptyState')}</p>
                  {!searchQuery && selectedTags.length === 0 && (
-                   <AddButton onClick={() => setIsModalOpen(true)} style={{ marginTop: '1rem' }}>
+                   <AddButton onClick={() => setIsModalOpen(true)}>
                       <Plus size={18} /> {t('app.newNote')}
                    </AddButton>
                  )}

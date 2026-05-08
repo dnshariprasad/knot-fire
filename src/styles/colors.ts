@@ -7,12 +7,12 @@ export const colors = {
     error: '#ef4444',
   },
   dark: {
-    background: '#0f172a',
-    surface: '#1e293b',
-    surfaceLight: '#334155',
+    background: '#020617',
+    surface: '#0f172a',
+    surfaceLight: '#1e293b',
     text: '#f8fafc',
-    textMuted: '#94a3b8',
-    border: '#334155',
+    textMuted: '#64748b',
+    border: '#1e293b',
   },
   light: {
     background: '#f8fafc',

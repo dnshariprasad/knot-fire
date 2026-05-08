@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { 
-  X, Mail, Shield, Trash2, Check, ChevronDown
+  X, Mail, Shield, Trash2, Check
 } from 'lucide-react';
 import { 
   collection, 
@@ -92,9 +92,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({ note, onClose, onShare }
 
         <S.Content>
           <S.ShareInputGroup>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <S.InputWrapper style={{ flex: 1 }}>
-                <Mail size={18} style={{ marginLeft: '0.5rem', opacity: 0.5 }} />
+            <S.ActionGroup>
+              <S.ShareInputBox>
+                <S.MailIcon size={18} />
                 <input 
                   type="email" 
                   placeholder={t('notes.enterUserEmail')} 
@@ -107,7 +107,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ note, onClose, onShare }
                   <DropdownMenu.Trigger asChild>
                     <S.SelectTrigger>
                       {permission === 'read' ? t('notes.readOnly') : t('notes.readWrite')}
-                      <ChevronDown size={14} style={{ opacity: 0.5 }} />
+                      <S.DropdownIcon size={14} />
                     </S.SelectTrigger>
                   </DropdownMenu.Trigger>
                   <DropdownMenu.Portal>
@@ -129,17 +129,16 @@ export const ShareModal: React.FC<ShareModalProps> = ({ note, onClose, onShare }
                     </DropdownMenu.Content>
                   </DropdownMenu.Portal>
                 </DropdownMenu.Root>
-              </S.InputWrapper>
+              </S.ShareInputBox>
               
-              <S.Button 
+              <S.AddButton 
                 $variant="primary" 
                 onClick={handleAddSharedUser} 
                 disabled={isSubmitting}
-                style={{ width: '44px', height: '44px', padding: 0, borderRadius: '12px', flexShrink: 0 }}
               >
                 {isSubmitting ? '...' : <Check size={18} />}
-              </S.Button>
-            </div>
+              </S.AddButton>
+            </S.ActionGroup>
           </S.ShareInputGroup>
 
           {note.sharedWith && note.sharedWith.length > 0 && (
