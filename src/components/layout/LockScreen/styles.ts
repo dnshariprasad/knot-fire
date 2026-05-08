@@ -17,7 +17,7 @@ export const LockOverlay = styled.div`
 export const LockCard = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.xl};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
   padding: 2.5rem;
   width: 100%;
   max-width: 400px;

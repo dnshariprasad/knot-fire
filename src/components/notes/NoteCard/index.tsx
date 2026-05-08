@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Note } from '../../../types';
 import { 
   Hash, 
-  User as UserIcon, Lock as LockIcon,
+  Users, Lock as LockIcon,
   Share2
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
@@ -64,28 +64,43 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
         </S.DateInfo>
 
         <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-          {isSharedWithMe && (
-            <S.FieldBadge 
-              $clickable
-              onClick={(e) => {
-                e.stopPropagation();
-                onShare();
-              }}
-              title={note.ownerEmail || ''}
-            >
-              <UserIcon size={9} />
-            </S.FieldBadge>
+          {isSharedWithMe ? (
+            <>
+              <S.FieldBadge 
+                $clickable
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onShare();
+                }}
+                title={note.ownerEmail || ''}
+              >
+                <Users size={9} />
+              </S.FieldBadge>
+              <S.FieldBadge 
+                $variant="primary"
+                $clickable
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onShare();
+                }}
+              >
+                <Share2 size={9} />
+              </S.FieldBadge>
+            </>
+          ) : (
+            collaboratorsCount > 0 && (
+              <S.FieldBadge 
+                $variant="primary"
+                $clickable
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onShare();
+                }}
+              >
+                <Share2 size={9} /> {collaboratorsCount}
+              </S.FieldBadge>
+            )
           )}
-          <S.FieldBadge 
-            $variant={collaboratorsCount > 0 ? 'primary' : undefined}
-            $clickable
-            onClick={(e) => {
-              e.stopPropagation();
-              onShare();
-            }}
-          >
-            <Share2 size={9} /> {collaboratorsCount > 0 ? collaboratorsCount : ''}
-          </S.FieldBadge>
         </div>
       </S.Footer>
 

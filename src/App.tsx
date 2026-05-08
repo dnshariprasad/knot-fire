@@ -31,13 +31,13 @@ const AppContainer = styled.div`
 
 const MainContent = styled.main<{ $viewMode?: 'grid' | 'list' }>`
   flex: 1;
-  padding: 2rem;
+  padding: 1rem 2rem;
   max-width: ${({ $viewMode }) => $viewMode === 'list' ? '800px' : '1200px'};
   margin: 0 auto;
   width: 100%;
 
   @media (max-width: 768px) {
-    padding: 1rem;
+    padding: 0.5rem 1rem;
   }
 `;
 

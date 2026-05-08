@@ -5,7 +5,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 export const Card = styled(motion.div)`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
   padding: 0.375rem 0.5rem 0.5rem 0.5rem;
   display: flex;
   flex-direction: column;
@@ -239,7 +239,7 @@ export const Footer = styled.div<{ $blurred?: boolean }>`
   justify-content: space-between;
   align-items: center;
   margin: 0.25rem -0.5rem -0.5rem -0.5rem;
-  padding: 0.5rem;
+  padding: 0.4rem 0.5rem 0.3rem 0.5rem;
   border-top: 1px solid ${({ theme }) => theme.colors.border};
   filter: ${({ $blurred }) => $blurred ? 'blur(4px)' : 'none'};
   opacity: ${({ $blurred }) => $blurred ? 0.3 : 1};

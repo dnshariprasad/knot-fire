@@ -6,14 +6,14 @@ export const ToolbarContainer = styled.div<{ $viewMode?: 'grid' | 'list' }>`
   display: flex;
   flex-direction: column;
   background: transparent;
-  padding: 1.5rem 2rem 0.5rem 2rem;
+  padding: 1.5rem 2rem 0.25rem 2rem;
   gap: 0.75rem;
   width: 100%;
   max-width: ${({ $viewMode }) => $viewMode === 'list' ? '800px' : '1200px'};
   margin: 0 auto;
 
   @media (max-width: 768px) {
-    padding: 1rem 1rem 0.5rem 1rem;
+    padding: 1rem 1rem 0.25rem 1rem;
   }
 `;
 
@@ -158,8 +158,8 @@ export const BottomSheet = styled(motion.div)`
   right: 0;
   background: ${({ theme }) => theme.colors.surface};
   border-top: 1px solid ${({ theme }) => theme.colors.border};
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
   z-index: 2001;
   max-height: 80vh;
   display: flex;
@@ -257,7 +257,7 @@ export const TagSearchInput = styled.div`
     width: 100%;
     background: ${({ theme }) => theme.colors.surfaceLight};
     border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
     padding: 0.875rem 1rem 0.875rem 2.75rem;
     color: ${({ theme }) => theme.colors.text};
     font-size: 1rem;

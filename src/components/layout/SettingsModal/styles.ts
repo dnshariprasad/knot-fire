@@ -24,7 +24,7 @@ export const Overlay = styled(motion.div)`
 export const Modal = styled(motion.div)`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.xl};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
   width: 100%;
   max-width: 500px;
   display: flex;
@@ -34,7 +34,7 @@ export const Modal = styled(motion.div)`
 
   @media (max-width: 768px) {
     max-width: 100%;
-    border-radius: 24px 24px 0 0;
+    border-radius: 12px 12px 0 0;
     border-bottom: none;
   }
 `;

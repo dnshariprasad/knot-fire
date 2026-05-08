@@ -14,7 +14,7 @@ export const Container = styled.div`
 export const Card = styled(motion.div)`
   background: ${({ theme }) => theme.colors.surface};
   padding: 2.5rem;
-  border-radius: ${({ theme }) => theme.borderRadius.xl};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
   box-shadow: ${({ theme }) => theme.shadows.lg};
   width: 100%;
   max-width: 400px;

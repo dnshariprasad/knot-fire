@@ -55,7 +55,7 @@ export const IconButton = styled.button`
   background: transparent;
   color: ${({ theme }) => theme.colors.textMuted};
   padding: 0.5rem;
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
   border: none;
   cursor: pointer;
   display: flex;
