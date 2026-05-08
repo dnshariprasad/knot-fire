@@ -19,25 +19,30 @@ export const ToolbarContainer = styled.div<{ $viewMode?: 'grid' | 'list' }>`
 
 export const SearchRow = styled.div`
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  align-items: stretch;
+  gap: 0.625rem;
+  height: 36px;
 `;
 
 export const SearchWrapper = styled.div`
   flex: 1;
   position: relative;
+  display: flex;
+  align-items: stretch;
 `;
 
 export const SearchInput = styled.input`
   width: 100%;
+  height: 100%;
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  padding: 0 3rem 0 2.75rem;
-  height: 48px;
+  padding: 0 0.875rem 0 2.5rem;
   color: ${({ theme }) => theme.colors.text};
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
@@ -47,29 +52,35 @@ export const SearchInput = styled.input`
 
 export const SearchIcon = styled(Search)`
   position: absolute;
-  left: 0.875rem;
+  left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   color: ${({ theme }) => theme.colors.textMuted};
+  width: 16px;
+  height: 16px;
 `;
 
 export const FilterButton = styled.button<{ $active?: boolean }>`
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: ${({ theme, $active }) => $active ? theme.colors.primary + '20' : 'transparent'};
+  background: ${({ theme, $active }) => $active ? theme.colors.primary + '20' : theme.colors.surface};
+  border: 1px solid ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
   color: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.textMuted};
-  padding: 0.375rem;
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 
   &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
     background: ${({ theme }) => theme.colors.surfaceLight};
     color: ${({ theme }) => theme.colors.primary};
   }
@@ -80,8 +91,8 @@ export const ToolbarButton = styled.button`
   border: 1px solid ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.textMuted};
   padding: 0;
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   display: flex;
   align-items: center;
@@ -89,6 +100,11 @@ export const ToolbarButton = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
@@ -187,25 +203,29 @@ export const SheetBody = styled.div`
 `;
 
 export const TagGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
 `;
 
 export const TagItem = styled.button<{ $selected: boolean }>`
-  padding: 0.75rem 1rem;
+  padding: 0.4rem 0.8rem;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   background: ${({ theme, $selected }) => $selected ? theme.colors.primary : theme.colors.surfaceLight};
   border: 1px solid ${({ theme, $selected }) => $selected ? theme.colors.primary : theme.colors.border};
   color: ${({ theme, $selected }) => $selected ? 'white' : theme.colors.text};
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  gap: 0.375rem;
+  white-space: nowrap;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  min-width: 0;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};

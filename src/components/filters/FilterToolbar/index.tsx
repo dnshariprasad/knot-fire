@@ -52,14 +52,15 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <S.FilterButton 
-            $active={selectedTags.length > 0} 
-            onClick={() => setIsSheetOpen(true)}
-            title={t('app.filterByTags')}
-          >
-            <SlidersHorizontal size={18} />
-          </S.FilterButton>
         </S.SearchWrapper>
+
+        <S.FilterButton 
+          $active={selectedTags.length > 0} 
+          onClick={() => setIsSheetOpen(true)}
+          title={t('app.filterByTags')}
+        >
+          <SlidersHorizontal size={18} />
+        </S.FilterButton>
       </S.SearchRow>
 
       <AnimatePresence>
