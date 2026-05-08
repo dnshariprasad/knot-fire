@@ -7,6 +7,15 @@ export const GlobalStyles = createGlobalStyle`
     box-sizing: border-box;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background: ${({ theme }) => theme.colors.primary + '30'};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
   :root {
     color-scheme: light dark;
   }

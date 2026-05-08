@@ -1,5 +1,5 @@
 // Force refresh: 1777998981408
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import styled from 'styled-components';
 import { Plus } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
@@ -8,7 +8,6 @@ import { Login } from './components/auth/Login';
 import { Header } from './components/layout/Header';
 import { NoteCard } from './components/notes/NoteCard';
 import { NoteModal } from './components/notes/NoteModal';
-import { ShareModal } from './components/notes/ShareModal';
 import { NoteSkeleton } from './components/notes/NoteSkeleton';
 import type { Note } from './types';
 import { FilterToolbar } from './components/filters/FilterToolbar';
@@ -18,8 +17,10 @@ import { GlobalStyles } from './styles/GlobalStyles';
 import { useTheme } from './styles/ThemeContext';
 import { useCrypto } from './context/CryptoContext';
 import { LockScreen } from './components/layout/LockScreen';
-import { SettingsModal } from './components/layout/SettingsModal';
 import { FAB } from './components/layout/FAB';
+
+const ShareModal = lazy(() => import('./components/notes/ShareModal').then(m => ({ default: m.ShareModal })));
+const SettingsModal = lazy(() => import('./components/layout/SettingsModal').then(m => ({ default: m.SettingsModal })));
 
 const AppContainer = styled.div`
   background: ${({ theme }) => theme.colors.background};
@@ -83,12 +84,15 @@ const EmptyState = styled.div`
 `;
 
 const Footer = styled.footer`
-  padding: 2rem;
+  padding: 3rem 2rem;
   text-align: center;
   color: ${({ theme }) => theme.colors.textMuted};
-  font-size: 0.875rem;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  margin-top: 2rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  opacity: 0.7;
+  border-top: 1px solid ${({ theme }) => theme.colors.border + '40'};
+  margin-top: 4rem;
 `;
 
 const AddButton = styled.button`
@@ -264,19 +268,21 @@ function App() {
             />
           )}
 
-          {isSettingsOpen && (
-            <SettingsModal onClose={() => setIsSettingsOpen(false)} />
-          )}
+          <Suspense fallback={null}>
+            {isSettingsOpen && (
+              <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+            )}
 
-          {isShareModalOpen && editingNote && (
-            <ShareModal 
-              note={editingNote}
-              onClose={() => setIsShareModalOpen(false)}
-              onShare={(sharedWith) => {
-                shareNote(editingNote.id, sharedWith);
-              }}
-            />
-          )}
+            {isShareModalOpen && editingNote && (
+              <ShareModal 
+                note={editingNote}
+                onClose={() => setIsShareModalOpen(false)}
+                onShare={(sharedWith) => {
+                  shareNote(editingNote.id, sharedWith);
+                }}
+              />
+            )}
+          </Suspense>
 
           <FAB 
             onClick={() => {
