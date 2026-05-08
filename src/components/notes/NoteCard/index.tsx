@@ -56,7 +56,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
               }}
               title={note.ownerEmail || ''}
             >
-              <UserIcon size={10} />
+              <UserIcon size={9} />
             </S.FieldBadge>
           )}
           <S.FieldBadge 
@@ -67,7 +67,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
               onShare();
             }}
           >
-            <Share2 size={10} /> {collaboratorsCount > 0 ? collaboratorsCount : ''}
+            <Share2 size={9} /> {collaboratorsCount > 0 ? collaboratorsCount : ''}
           </S.FieldBadge>
         </div>
       </S.Header>
