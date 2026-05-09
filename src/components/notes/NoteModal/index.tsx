@@ -1,44 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import { 
   X, Type, Layout, Tag as TagIcon, PlusCircle, Trash2, 
   Calendar, MapPin, Share2, MoreVertical, Edit2, Plus, 
   ExternalLink, User as UserIcon, Lock as LockIcon,
-  Eye, EyeOff, Hash, Key, Copy, Loader2
+  Eye, EyeOff, Hash, Copy, Loader2, Users
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import type { Note, CustomField, SharedUser } from '../../../types';
+import { useAuth } from '../../../context/AuthContext';
+import type { Note, CustomField } from '../../../types';
 import { Modal } from '../../common/Modal';
 import { ConfirmModal } from '../../common/ConfirmModal';
-import { ShareModal } from '../ShareModal';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as S from './styles';
+
+// Utils
+import { isUrl } from '../../../utils/url';
+import { getPeriodString, formatDate } from '../../../utils/date';
+import { fetchUrlMetadata } from '../../../utils/metadata';
+
+const ShareModal = lazy(() => import('../ShareModal').then(m => ({ default: m.ShareModal })));
 
 interface NoteModalProps {
   note?: Note | null;
   allTags: string[];
   onClose: () => void;
   onSave: (note: Partial<Note>) => void;
-  onDelete?: (id: string) => void;
-  onShare?: (id: string, sharedWith: SharedUser[]) => void;
+  onDelete: (id: string) => void;
+  onShare: (sharedWith: any[]) => void;
 }
 
-export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, onSave, onDelete, onShare }) => {
+export const NoteModal: React.FC<NoteModalProps> = ({ 
+  note, 
+  allTags,
+  onClose, 
+  onSave, 
+  onDelete,
+  onShare 
+}) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(!note);
-  
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
   const [tagList, setTagList] = useState<string[]>([]);
   const [tagInputValue, setTagInputValue] = useState('');
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [revealedFields, setRevealedFields] = useState<Record<number, boolean>>({});
   
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [pin, setPin] = useState('');
-  const [isVerified, setIsVerified] = useState(false);
-  const [verifyPin, setVerifyPin] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
@@ -46,103 +54,58 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isFetchingMetadata, setIsFetchingMetadata] = useState(false);
 
-  const fetchUrlMetadata = async (url: string) => {
-    if (!url.startsWith('http')) return;
-    
+  const handleMetadataFetch = async (url: string) => {
     setIsFetchingMetadata(true);
-    try {
-      const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`);
-      const data = await response.json();
-      
-      if (data.status === 'success' && data.data) {
-        const { title: fetchedTitle, description: fetchedDesc } = data.data;
-        
-        setCustomFields(prev => {
-          let updated = [...prev];
-          
-          // Check if Title exists, if not add it at the top
-          const titleIdx = updated.findIndex(f => f.label.toLowerCase() === 'title');
-          if (titleIdx === -1) {
-            updated.unshift({ label: 'Title', value: fetchedTitle || '' });
-          } else if (!updated[titleIdx].value || updated[titleIdx].value === 'Untitled') {
-            updated[titleIdx].value = fetchedTitle || updated[titleIdx].value;
-          }
-          
-          // Check if Description exists, if not add it after title
-          const descIdx = updated.findIndex(f => f.label.toLowerCase() === 'description');
-          if (descIdx === -1) {
-            const newTitleIdx = updated.findIndex(f => f.label.toLowerCase() === 'title');
-            updated.splice(newTitleIdx + 1, 0, { label: 'Description', value: fetchedDesc || '' });
-          } else if (!updated[descIdx].value) {
-            updated[descIdx].value = fetchedDesc || '';
-          }
-          
-          return updated;
-        });
-
-        // Add suggestions based on domain or metadata keywords if available
-        const domain = new URL(url).hostname.replace('www.', '').split('.')[0];
-        if (domain && !tagList.includes(domain)) {
-          setTagList(prev => [...prev, domain]);
+    const metadata = await fetchUrlMetadata(url);
+    if (metadata) {
+      const { title: fetchedTitle, description: fetchedDesc } = metadata;
+      setCustomFields(prev => {
+        let updated = [...prev];
+        const titleIdx = updated.findIndex(f => f.label.toLowerCase() === 'title');
+        if (titleIdx === -1 && fetchedTitle) {
+          updated = [{ label: 'Title', value: fetchedTitle }, ...updated];
+        } else if (titleIdx !== -1 && !updated[titleIdx].value && fetchedTitle) {
+          updated[titleIdx].value = fetchedTitle;
         }
-        
-        toast.success(t('notes.metadataFetched'));
-      }
-    } catch (error) {
-      console.error('Error fetching metadata:', error);
-    } finally {
-      setIsFetchingMetadata(false);
-    }
-  };
 
-  const filteredSuggestions = allTags.filter(tag => 
-    tag.toLowerCase().includes(tagInputValue.toLowerCase()) && 
-    !tagList.includes(tag)
-  ).slice(0, 5);
+        const descIdx = updated.findIndex(f => f.label.toLowerCase().includes('desc'));
+        if (descIdx === -1 && fetchedDesc) {
+          updated.push({ label: 'Description', value: fetchedDesc });
+        } else if (descIdx !== -1 && !updated[descIdx].value && fetchedDesc) {
+          updated[descIdx].value = fetchedDesc;
+        }
+        return updated;
+      });
+      toast.success(t('notes.metadataFetched'));
+    }
+    setIsFetchingMetadata(false);
+  };
 
   useEffect(() => {
     if (note) {
       const initialFields = [...(note.customFields || [])];
       
-      // Migrate Title if not already in custom fields
-      if (note.title && !initialFields.some(f => f.label.toLowerCase() === 'title')) {
+      const hasTitleField = initialFields.some(f => f.label.toLowerCase() === 'title');
+      if (!hasTitleField && note.title) {
         initialFields.unshift({ label: 'Title', value: note.title });
       }
-      
-      // Migrate Description if not already in custom fields
-      if (note.content && !initialFields.some(f => f.label.toLowerCase() === 'description')) {
-        const descIndex = initialFields.findIndex(f => f.label.toLowerCase() === 'title');
-        if (descIndex !== -1) {
-          initialFields.splice(descIndex + 1, 0, { label: 'Description', value: note.content });
-        } else {
-          initialFields.unshift({ label: 'Description', value: note.content });
-        }
+
+      const hasDescField = initialFields.some(f => f.label.toLowerCase().includes('desc') || f.label.toLowerCase().includes('content'));
+      if (!hasDescField && note.content) {
+        initialFields.push({ label: 'Description', value: note.content });
       }
 
       setCustomFields(initialFields);
       setTagList(note.tags || []);
-      setIsPrivate(note.isPrivate || false);
-      setPin(note.pin || '');
-      setIsVerified(!note.isPrivate);
-      
-      // Clear core states as we use custom fields now
-      setTitle('');
-      setContent('');
     } else {
-      setTitle('');
-      setContent('');
       setTagList([]);
       setCustomFields([]);
-      setIsPrivate(false);
-      setPin('');
-      setIsVerified(true);
     }
     setRevealedFields({});
     setIsEditing(!note);
-    setVerifyPin('');
   }, [note]);
 
-  const handleAddTag = (_e?: React.KeyboardEvent | React.FocusEvent) => {
+  const handleAddTag = () => {
     const val = tagInputValue.trim().toLowerCase();
     if (val && !tagList.includes(val)) {
       setTagList([...tagList, val]);
@@ -163,106 +126,39 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
     setTagList(tagList.filter(t => t !== tagToRemove));
   };
 
+  const filteredSuggestions = useMemo(() => {
+    const query = tagInputValue.trim().toLowerCase();
+    return allTags.filter(tag => tag.includes(query) && !tagList.includes(tag));
+  }, [allTags, tagInputValue, tagList]);
+
   const handleSave = () => {
-    if (isPrivate && !pin) {
-      toast.error(t('notes.pinRequired'));
-      return;
-    }
-
-    const currentTags = [...tagList];
-    const finalVal = tagInputValue.trim().toLowerCase();
-    if (finalVal && !currentTags.includes(finalVal)) {
-      currentTags.push(finalVal);
-    }
-
-    // Extract Title and Description from custom fields for top-level note properties
     const titleField = customFields.find(f => f.label.toLowerCase() === 'title');
-    const descField = customFields.find(f => f.label.toLowerCase() === 'description');
+    const descField = customFields.find(f => f.label.toLowerCase().includes('desc') || f.label.toLowerCase().includes('content'));
 
     onSave({
       title: titleField ? titleField.value : '',
       content: descField ? descField.value : '',
-      tags: currentTags,
-      customFields: customFields.filter(f => f.label.trim() !== ''),
-      isPrivate,
-      pin
+      tags: [...tagList],
+      customFields: customFields.filter(f => f.label.trim() !== '')
     });
   };
 
-  const handleVerify = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (verifyPin === pin) {
-      setIsVerified(true);
-      toast.success(t('notes.unlocked'));
-    } else {
-      toast.error(t('notes.locked'));
-      setVerifyPin('');
-    }
-  };
-
-  const handleShare = () => {
-    if (!note) {
-      toast.error(t('notes.saveFirst'));
-      return;
-    }
-    setShowShareModal(true);
-  };
-
-  const isUrl = (text: string) => text.startsWith('http://') || text.startsWith('https://');
-
-  const getPeriodString = (dateStr: string) => {
-    try {
-      const targetDate = new Date(dateStr);
-      if (isNaN(targetDate.getTime())) return null;
-      
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      targetDate.setHours(0, 0, 0, 0);
-      
-      const diffTime = targetDate.getTime() - today.getTime();
-      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (diffDays === 0) return t('common.today');
-      
-      const isPast = diffDays < 0;
-      let remainingDays = Math.abs(diffDays);
-      
-      const years = Math.floor(remainingDays / 365);
-      remainingDays %= 365;
-      const months = Math.floor(remainingDays / 30);
-      remainingDays %= 30;
-      const weeks = Math.floor(remainingDays / 7);
-      const days = remainingDays % 7;
-      
-      const parts = [];
-      if (years > 0) parts.push(`${years}Y`);
-      if (months > 0) parts.push(`${months}M`);
-      if (weeks > 0) parts.push(`${weeks}W`);
-      if (days > 0) parts.push(`${days}D`);
-      
-      const duration = parts.join(' ');
-      return isPast ? `${duration} Ago` : `In ${duration}`;
-    } catch (e) {
-      return null;
-    }
-  };
-
   const modalTitle = (
-    <S.ModalTitleWrapper>
-      <S.ModalTitleText>
-        {isEditing ? (note ? t('notes.editNote') : t('notes.createNote')) : t('notes.notePreview')}
-      </S.ModalTitleText>
-      {isPrivate && !isVerified && (
-        <S.LockIconWrapper $primary>
-          <LockIcon size={16} />
-        </S.LockIconWrapper>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <span>{isEditing ? (note ? t('notes.editNote') : t('notes.newNote')) : t('notes.viewNote')}</span>
+      {note && (note.sharedWithUids?.length || 0) > 0 && (
+        <S.SharedBadge title={t('notes.collaborators')}>
+          <Users size={14} />
+          <span>{note.sharedWithUids?.length}</span>
+        </S.SharedBadge>
       )}
-      {isPrivate && isVerified && (
-        <S.LockIconWrapper $revealed>
-          <LockIcon size={16} />
-        </S.LockIconWrapper>
+      {note && note.userId !== (user?.uid || '') && (
+        <S.SharedBadge $variant="secondary" title={note.ownerEmail || ''}>
+          <Users size={14} />
+          <span>{t('common.shared')}</span>
+        </S.SharedBadge>
       )}
-    </S.ModalTitleWrapper>
+    </div>
   );
 
   return (
@@ -270,32 +166,49 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
       isOpen={true}
       onClose={onClose}
       title={modalTitle}
-      maxWidth="600px"
+      maxWidth="800px"
+      footer={
+        isEditing ? (
+          <>
+            <S.Button $variant="outline" onClick={onClose}>
+              {t('common.cancel')}
+            </S.Button>
+            <S.Button $variant="primary" onClick={handleSave}>
+              {t('notes.saveChanges')}
+            </S.Button>
+          </>
+        ) : (
+          <>
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <S.FixedActionButton $variant="outline">
+                  <MoreVertical size={20} />
+                </S.FixedActionButton>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <S.DropdownContent sideOffset={5}>
+                  <S.DropdownItem onSelect={() => setShowShareModal(true)}>
+                    <Share2 size={16} /> {t('common.share')}
+                  </S.DropdownItem>
+                  <DropdownMenu.Separator className="Separator" />
+                  <S.DropdownItem 
+                    onSelect={() => setShowDeleteConfirm(true)}
+                    className="danger"
+                  >
+                    <Trash2 size={16} /> {t('common.delete')}
+                  </S.DropdownItem>
+                </S.DropdownContent>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
+
+            <S.Button $variant="primary" onClick={() => setIsEditing(true)}>
+              <Edit2 size={18} /> {t('notes.editNote')}
+            </S.Button>
+          </>
+        )
+      }
     >
-      {!isVerified ? (
-        <S.LockView>
-          <S.LockIconHero>
-            <LockIcon size={32} />
-          </S.LockIconHero>
-          <S.LockContent>
-            <S.LockTitleText>{t('notes.lockedTitle')}</S.LockTitleText>
-            <S.LockDescriptionText>{t('notes.lockedMessage')}</S.LockDescriptionText>
-          </S.LockContent>
-          <S.VerifyForm onSubmit={handleVerify}>
-            <S.UnlockInput 
-              type="password" 
-              placeholder={t('common.pin')} 
-              maxLength={4}
-              value={verifyPin}
-              onChange={(e) => setVerifyPin(e.target.value.replace(/\D/g, ''))}
-              autoFocus
-            />
-            <S.UnlockButton type="submit" $variant="primary">
-              <Key size={18} /> {t('notes.unlockNote')}
-            </S.UnlockButton>
-          </S.VerifyForm>
-        </S.LockView>
-      ) : isEditing ? (
+      {isEditing ? (
         <S.EditContainer>
           <S.DynamicFieldsSection>
             <S.SectionHeader>
@@ -349,13 +262,10 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                       const updated = [...customFields];
                       updated[idx].value = e.target.value;
                       setCustomFields(updated);
-                      
-                      // Auto-expand
                       e.target.style.height = 'auto';
                       e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
                     onFocus={(e) => {
-                      // Initial expansion on focus
                       e.target.style.height = 'auto';
                       e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
@@ -373,12 +283,8 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                       updated[idx].value = val;
                       setCustomFields(updated);
 
-                      // If it's a link field and looks like a URL, fetch metadata
-                      if (field.label.toLowerCase().includes('link')) {
-                        const urlRegex = /^(https?:\/\/[^\s]+)$/;
-                        if (urlRegex.test(val.trim())) {
-                          fetchUrlMetadata(val.trim());
-                        }
+                      if (field.label.toLowerCase().includes('link') && val.startsWith('http')) {
+                        handleMetadataFetch(val.trim());
                       }
                     }}
                   />
@@ -468,58 +374,23 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
               )}
             </S.TagInputWrapper>
           </S.FormGroup>
-
-
-          <S.PrivacySection>
-            <S.Label>
-              <S.PrivacyLabel $active={isPrivate}>
-                <LockIcon size={14} /> {t('notes.privateNote')}
-              </S.PrivacyLabel>
-              <S.Toggle $active={isPrivate} onClick={() => setIsPrivate(!isPrivate)} />
-            </S.Label>
-            <S.PrivacyDesc $hasMargin={isPrivate}>
-              {t('notes.privateNoteDescription')}
-            </S.PrivacyDesc>
-            {isPrivate && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
-                <S.PINInputWrapper>
-                  <S.PINLabel>{t('notes.setSecurityPin')}</S.PINLabel>
-                  <S.PINInput 
-                    type="password" 
-                    maxLength={4} 
-                    placeholder="••••" 
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                  />
-                </S.PINInputWrapper>
-              </motion.div>
-            )}
-          </S.PrivacySection>
-          <S.StickyFooter>
-            <S.Button $variant="outline" onClick={onClose}>
-              {t('common.cancel')}
-            </S.Button>
-            <S.Button $variant="primary" onClick={handleSave}>
-              {t('notes.saveChanges')}
-            </S.Button>
-          </S.StickyFooter>
         </S.EditContainer>
       ) : (
         <S.ViewContainer>
-          {(title || tagList.length > 0) && (
-            <S.ViewHeaderWrapper>
-              {title && <S.ViewTitle>{title}</S.ViewTitle>}
-              {tagList.length > 0 && (
-                <S.ViewTags>
-                  {tagList.map((tag, tIdx) => (
-                    <S.TagChip key={`${tag}-${tIdx}`}>
-                      <Hash size={14} /> {tag}
-                    </S.TagChip>
-                  ))}
-                </S.ViewTags>
-              )}
-            </S.ViewHeaderWrapper>
-          )}
+          <S.ViewHeaderWrapper>
+            {customFields.find(f => f.label.toLowerCase() === 'title')?.value && (
+              <S.ViewTitle>{customFields.find(f => f.label.toLowerCase() === 'title')?.value}</S.ViewTitle>
+            )}
+            {tagList.length > 0 && (
+              <S.ViewTags>
+                {tagList.map((tag, tIdx) => (
+                  <S.TagChip key={`${tag}-${tIdx}`}>
+                    <Hash size={14} /> {tag}
+                  </S.TagChip>
+                ))}
+              </S.ViewTags>
+            )}
+          </S.ViewHeaderWrapper>
 
           {customFields.length > 0 && (
             <S.CustomFieldDisplay>
@@ -539,7 +410,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
                     >
                       <Copy size={12} />
                     </S.ActionIconButton>
-                    </S.CardHeader>
+                  </S.CardHeader>
                   <S.FieldValue>
                     <S.FieldValueWrapper>
                       {field.label.toLowerCase().includes('location') && <MapPin size={14} color="#94a3b8" />}
@@ -578,51 +449,17 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
             </S.CustomFieldDisplay>
           )}
 
-          {content && <S.ViewBody>{content}</S.ViewBody>}
+          {customFields.find(f => f.label.toLowerCase().includes('desc') || f.label.toLowerCase().includes('content'))?.value && (
+            <S.ViewBody>{customFields.find(f => f.label.toLowerCase().includes('desc') || f.label.toLowerCase().includes('content'))?.value}</S.ViewBody>
+          )}
 
           <S.FooterSpacer>
             {note && (
               <S.Timestamp title={t('notes.createdDate')}>
                 <Calendar size={14} />
-                {new Date(note.createdAt).toLocaleString(undefined, {
-                  dateStyle: 'medium',
-                  timeStyle: 'short'
-                })}
+                {formatDate(note.createdAt)}
               </S.Timestamp>
             )}
-            <S.Footer>
-              <S.FooterActions>
-                {!isEditing && isVerified && (
-                  <>
-                    <DropdownMenu.Root>
-                      <DropdownMenu.Trigger asChild>
-                        <S.FixedActionButton $variant="outline">
-                          <MoreVertical size={20} />
-                        </S.FixedActionButton>
-                      </DropdownMenu.Trigger>
-                      <DropdownMenu.Portal>
-                        <S.Popover sideOffset={8} align="end">
-                          {onDelete && note && (
-                            <S.PopoverItem 
-                              $danger 
-                              onSelect={() => setShowDeleteConfirm(true)}
-                            >
-                              <Trash2 size={16} /> {t('common.delete')}
-                            </S.PopoverItem>
-                          )}
-                        </S.Popover>
-                      </DropdownMenu.Portal>
-                    </DropdownMenu.Root>
-                    <S.FixedActionButton $variant="outline" onClick={handleShare}>
-                      <Share2 size={20} />
-                    </S.FixedActionButton>
-                  </>
-                )}
-                <S.Button $variant="primary" onClick={() => setIsEditing(true)}>
-                  <Edit2 size={18} /> {t('notes.editNote')}
-                </S.Button>
-              </S.FooterActions>
-            </S.Footer>
           </S.FooterSpacer>
         </S.ViewContainer>
       )}
@@ -632,23 +469,23 @@ export const NoteModal: React.FC<NoteModalProps> = ({ note, allTags, onClose, on
           isOpen={showDeleteConfirm}
           onClose={() => setShowDeleteConfirm(false)}
           onConfirm={() => {
-            if (onDelete) {
-              onDelete(note.id);
-              setShowDeleteConfirm(false);
-            }
+            onDelete(note.id);
+            onClose();
           }}
           title={t('notes.deleteNote')}
           message={t('notes.deleteConfirm')}
         />
       )}
 
-      {showShareModal && note && onShare && (
-        <ShareModal 
-          note={note}
-          onClose={() => setShowShareModal(false)}
-          onShare={(sharedWith) => onShare(note.id, sharedWith)}
-        />
-      )}
+      <Suspense fallback={null}>
+        {showShareModal && note && (
+          <ShareModal
+            item={note}
+            onClose={() => setShowShareModal(false)}
+            onShare={onShare}
+          />
+        )}
+      </Suspense>
     </Modal>
   );
 };

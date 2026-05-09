@@ -10,6 +10,8 @@ interface ModalProps {
   children: ReactNode;
   maxWidth?: string;
   showCloseButton?: boolean;
+  progress?: number;
+  footer?: ReactNode;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -18,7 +20,9 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   children,
   maxWidth,
-  showCloseButton = true
+  showCloseButton = true,
+  progress,
+  footer
 }) => {
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
 
@@ -46,6 +50,11 @@ export const Modal: React.FC<ModalProps> = ({
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             onClick={(e) => e.stopPropagation()}
           >
+            {typeof progress === 'number' && (
+              <S.TopProgressBar>
+                <S.TopProgressFill $width={progress} />
+              </S.TopProgressBar>
+            )}
             <S.Header>
               <S.Title>{title}</S.Title>
               {showCloseButton && (
@@ -57,6 +66,11 @@ export const Modal: React.FC<ModalProps> = ({
             <S.Body>
               {children}
             </S.Body>
+            {footer && (
+              <S.Footer>
+                {footer}
+              </S.Footer>
+            )}
           </S.ModalContainer>
         </S.Overlay>
       )}

@@ -5,33 +5,66 @@ import { Search } from 'lucide-react';
 export const ToolbarContainer = styled.div<{ $viewMode?: 'grid' | 'list' }>`
   display: flex;
   flex-direction: column;
-  background: ${({ theme }) => theme.colors.surface + '80'};
-  backdrop-filter: blur(12px);
-  padding: 1rem 1.5rem;
-  gap: 0.75rem;
+  padding: 0.5rem 0;
+  gap: 1.25rem;
   width: 100%;
-  max-width: ${({ $viewMode }) => $viewMode === 'list' ? '800px' : '1200px'};
-  margin: 1rem auto;
-  border-radius: ${({ theme }) => theme.borderRadius.lg};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  max-width: ${({ $viewMode }) => $viewMode === 'list' ? '900px' : '1300px'};
+  margin: 0 auto 1.5rem auto;
   position: sticky;
   top: 1rem;
   z-index: 100;
 
   @media (max-width: 768px) {
-    margin: 0.5rem;
-    width: calc(100% - 1rem);
-    padding: 0.75rem 1rem;
+    margin: 0 0 1rem 0;
+    width: 100%;
+    padding: 0.5rem 0;
     top: 0.5rem;
   }
 `;
 
+export const TabRow = styled.div`
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.25rem;
+`;
+
+export const TabButton = styled.button<{ $active?: boolean }>`
+  background: ${({ theme, $active }) => $active ? theme.colors.primary + '10' : 'transparent'};
+  border: 1px solid ${({ theme, $active }) => $active ? theme.colors.primary : 'transparent'};
+  color: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.textMuted};
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.primary + '05'};
+  }
+`;
+
+export const TabBadge = styled.span`
+  background: ${({ theme }) => theme.colors.textMuted + '20'};
+  color: ${({ theme }) => theme.colors.textMuted};
+  padding: 0.1rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 900;
+`;
+
 export const SearchRow = styled.div`
   display: flex;
-  align-items: stretch;
-  gap: 0.625rem;
-  height: 36px;
+  align-items: center;
+  gap: 0.75rem;
+  height: 42px;
 `;
 
 export const SearchWrapper = styled.div`
@@ -39,6 +72,7 @@ export const SearchWrapper = styled.div`
   position: relative;
   display: flex;
   align-items: stretch;
+  height: 100%;
 `;
 
 export const SearchInput = styled.input`
@@ -75,8 +109,8 @@ export const FilterButton = styled.button<{ $active?: boolean }>`
   background: ${({ theme, $active }) => $active ? theme.colors.primary + '20' : theme.colors.surface};
   border: 1px solid ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
   color: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.textMuted};
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   display: flex;
   align-items: center;
@@ -102,8 +136,8 @@ export const ToolbarButton = styled.button`
   border: 1px solid ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.textMuted};
   padding: 0;
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   display: flex;
   align-items: center;

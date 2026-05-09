@@ -32,19 +32,37 @@ export const ModalContainer = styled(motion.div)<{ $maxWidth?: string }>`
   box-shadow: ${({ theme }) => theme.shadows.lg};
   overflow: hidden;
   position: relative;
+  font-family: 'Outfit', sans-serif;
 
   @media (max-width: 768px) {
     max-width: 100%;
-    border-radius: 16px 16px 0 0;
+    border-radius: 20px 20px 0 0;
     border-bottom: none;
   }
+`;
+
+export const TopProgressBar = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: ${({ theme }) => theme.colors.border}22;
+  z-index: 100;
+  overflow: hidden;
+`;
+
+export const TopProgressFill = styled.div<{ $width: number }>`
+  height: 100%;
+  width: ${({ $width }) => $width}%;
+  background: ${({ theme }) => theme.colors.primary};
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 `;
 
 /* ModalHandle removed per user request */
 
 export const Header = styled.div`
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  padding: 1.25rem 1.5rem 0.5rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -86,4 +104,16 @@ export const CloseButton = styled.button`
     background: ${({ theme }) => theme.colors.surfaceLight};
     color: ${({ theme }) => theme.colors.text};
   }
+`;
+
+export const Footer = styled.div`
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  z-index: 100;
+  font-family: 'Outfit', sans-serif;
 `;

@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState } from 'react';
 import { encrypt, decrypt } from '../utils/cryptoUtils';
-import type { Note } from '../types';
+import type { Note, Todo } from '../types';
 
 interface CryptoContextType {
   masterKey: string | null;
   setKey: (key: string) => void;
   encryptNote: (note: Partial<Note>) => any;
   decryptNote: (note: any) => Note;
+  encryptTodo: (todo: Partial<Todo>) => any;
+  decryptTodo: (todo: any) => Todo;
   clearKey: () => void;
   isSkipped: boolean;
   setSkipped: (skipped: boolean) => void;
@@ -53,9 +55,7 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         label: encrypt(f.label, masterKey),
         value: encrypt(f.value, masterKey)
       })) : [],
-      isEncrypted: true,
-      isPrivate: note.isPrivate || false,
-      pin: note.pin ? encrypt(note.pin, masterKey) : ''
+      isEncrypted: true
     };
   };
 
@@ -71,9 +71,7 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         customFields: note.customFields ? note.customFields.map((f: any) => ({
           label: decrypt(f.label, masterKey),
           value: decrypt(f.value, masterKey)
-        })) : [],
-        isPrivate: note.isPrivate || false,
-        pin: note.pin ? decrypt(note.pin, masterKey) : ''
+        })) : []
       };
     } catch (e) {
       return {
@@ -82,13 +80,54 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         content: '[Decryption Failed]',
         tags: [],
         customFields: []
+      } as any;
+    }
+  };
+
+  const encryptTodo = (todo: Partial<Todo>) => {
+    if (!masterKey) {
+      return { ...todo, isEncrypted: false };
+    }
+    
+    return {
+      ...todo,
+      title: todo.title ? encrypt(todo.title, masterKey) : '',
+      items: todo.items ? todo.items.map(item => ({
+        ...item,
+        text: encrypt(item.text, masterKey)
+      })) : [],
+      tags: todo.tags ? todo.tags.map(t => encrypt(t, masterKey)) : [],
+      isEncrypted: true
+    };
+  };
+
+  const decryptTodo = (todo: any): Todo => {
+    if (!masterKey || !todo.isEncrypted) return todo as Todo;
+
+    try {
+      return {
+        ...todo,
+        title: decrypt(todo.title, masterKey),
+        items: todo.items ? todo.items.map((item: any) => ({
+          ...item,
+          text: decrypt(item.text, masterKey)
+        })) : [],
+        tags: todo.tags ? todo.tags.map((t: string) => decrypt(t, masterKey)) : []
       };
+    } catch (e) {
+      return {
+        ...todo,
+        title: '[Decryption Failed]',
+        items: [],
+        tags: []
+      } as any;
     }
   };
 
   return (
     <CryptoContext.Provider value={{ 
       masterKey, setKey, encryptNote, decryptNote, 
+      encryptTodo, decryptTodo,
       clearKey, isSkipped, setSkipped 
     }}>
       {children}

@@ -9,6 +9,13 @@ export interface SharedUser {
   permission: 'read' | 'write';
 }
 
+export interface TodoItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  dueDate?: string;
+}
+
 export interface Note {
   id: string;
   title: string;
@@ -19,9 +26,24 @@ export interface Note {
   updatedAt: number;
   userId: string;
   isEncrypted?: boolean;
-  isPrivate?: boolean;
-  pin?: string;
+
   sharedWith?: SharedUser[];
   sharedWithUids?: string[];
   ownerEmail?: string;
 }
+
+export interface Todo {
+  id: string;
+  title: string;
+  items: TodoItem[];
+  tags: string[];
+  createdAt: number;
+  updatedAt: number;
+  userId: string;
+  isEncrypted?: boolean;
+
+  sharedWith?: SharedUser[];
+  sharedWithUids?: string[];
+  ownerEmail?: string;
+}
+

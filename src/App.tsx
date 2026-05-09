@@ -1,75 +1,83 @@
-// Force refresh: 1777998981408
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import styled from 'styled-components';
 import { Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './context/AuthContext';
 import { useNotes } from './hooks/useNotes';
 import { Login } from './components/auth/Login';
 import { Header } from './components/layout/Header';
 import { NoteCard } from './components/notes/NoteCard';
 import { NoteModal } from './components/notes/NoteModal';
+import { TodoCard } from './components/todos/TodoCard';
+import { TodoModal } from './components/todos/TodoModal';
 import { NoteSkeleton } from './components/notes/NoteSkeleton';
-import type { Note } from './types';
+import type { Note, Todo } from './types';
 import { FilterToolbar } from './components/filters/FilterToolbar';
+import { useTodos } from './hooks/useTodos';
 import { Toaster } from 'react-hot-toast';
-import { useTranslation } from 'react-i18next';
 import { GlobalStyles } from './styles/GlobalStyles';
 import { useTheme } from './styles/ThemeContext';
 import { useCrypto } from './context/CryptoContext';
 import { LockScreen } from './components/layout/LockScreen';
 import { FAB } from './components/layout/FAB';
+import { Navigation } from './components/layout/Navigation';
+import { Sidebar } from './components/layout/Sidebar';
 
 const ShareModal = lazy(() => import('./components/notes/ShareModal').then(m => ({ default: m.ShareModal })));
 const SettingsModal = lazy(() => import('./components/layout/SettingsModal').then(m => ({ default: m.SettingsModal })));
 
-const AppContainer = styled.div`
-  background: ${({ theme }) => theme.colors.background};
-  min-height: 100vh;
+const AppLayout = styled.div`
   display: flex;
-  flex-direction: column;
-  transition: background 0.3s ease;
+  min-height: 100vh;
+  background: ${({ theme }) => theme.colors.background};
 `;
 
-const MainContent = styled.main<{ $viewMode?: 'grid' | 'list' }>`
+const ContentWrapper = styled.div`
   flex: 1;
-  padding: 1rem 2rem;
-  max-width: ${({ $viewMode }) => $viewMode === 'list' ? '800px' : '1200px'};
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100vh;
+  overflow-y: auto;
+  position: relative;
+`;
+
+const Main = styled.main`
+  flex: 1;
+  padding: 1.5rem 2rem;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  padding-bottom: 6rem;
 
   @media (max-width: 768px) {
-    padding: 0.5rem 1rem;
+    padding: 1rem;
+    padding-bottom: 8rem;
   }
 `;
 
-const NotesGrid = styled.div<{ $viewMode?: 'grid' | 'list' }>`
-  ${({ $viewMode }) => $viewMode === 'list' ? `
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    
-    & > * {
-      margin-bottom: 0 !important;
-    }
-  ` : `
-    column-count: 3;
-    column-gap: 0.5rem;
-    
-    @media (max-width: 1100px) {
-      column-count: 2;
-    }
-    
-    @media (max-width: 640px) {
-      column-count: 2;
-      column-gap: 0.5rem;
-    }
-
-    & > * {
-      break-inside: avoid;
-      margin-bottom: 0.5rem;
-    }
-  `}
+const ContentGrid = styled.div<{ $viewMode: 'grid' | 'list' }>`
+  column-count: ${({ $viewMode }) => $viewMode === 'grid' ? '3' : '1'};
+  column-gap: 0.5rem;
+  max-width: ${({ $viewMode }) => $viewMode === 'list' ? '900px' : 'none'};
+  margin: ${({ $viewMode }) => $viewMode === 'list' ? '0 auto' : '0'};
   width: 100%;
+  
+  @media (max-width: 1200px) {
+    column-count: ${({ $viewMode }) => $viewMode === 'grid' ? '2' : '1'};
+  }
+
+  @media (max-width: 768px) {
+    column-count: ${({ $viewMode }) => $viewMode === 'grid' ? '2' : '1'};
+    column-gap: 0.5rem;
+  }
+
+  & > * {
+    break-inside: avoid;
+    margin-bottom: 0.1rem;
+    display: inline-block;
+    width: 100%;
+  }
 `;
 
 const EmptyState = styled.div`
@@ -78,24 +86,48 @@ const EmptyState = styled.div`
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  color: ${({ theme }) => theme.colors.textMuted};
   text-align: center;
-  gap: 1rem;
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  border: 1px dashed ${({ theme }) => theme.colors.border};
+`;
+
+const EmptyIcon = styled.div`
+  width: 64px;
+  height: 64px;
+  background: ${({ theme }) => theme.colors.primary + '10'};
+  color: ${({ theme }) => theme.colors.primary};
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+`;
+
+const EmptyTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+`;
+
+const EmptyText = styled.p`
+  color: ${({ theme }) => theme.colors.textMuted};
+  max-width: 300px;
 `;
 
 const Footer = styled.footer`
-  padding: 3rem 2rem;
+  padding: 2rem;
   text-align: center;
   color: ${({ theme }) => theme.colors.textMuted};
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  opacity: 0.7;
-  border-top: 1px solid ${({ theme }) => theme.colors.border + '40'};
-  margin-top: 4rem;
+  font-size: 0.875rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+
+  @media (max-width: 768px) {
+    display: none; // Hidden on mobile due to bottom nav
+  }
 `;
 
-const AddButton = styled.button`
+const CreateButton = styled.button`
   background: ${({ theme }) => theme.colors.primary};
   color: white;
   padding: 0.75rem 1.5rem;
@@ -109,11 +141,15 @@ const AddButton = styled.button`
   margin-top: 1rem;
 `;
 
+// Mobile only styles
+// Removed unused DesktopOnly and MobileOnly to fix TS errors
+
 function App() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { notes, loading: notesLoading, addNote, updateNote, deleteNote, shareNote } = useNotes();
-  const { themeMode, toggleTheme, currentTheme } = useTheme();
+  const { todos, loading: todosLoading, addTodo, updateTodo, deleteTodo, shareTodo } = useTodos();
+  const { themeMode, toggleTheme } = useTheme();
   const { masterKey, setKey, setSkipped, isSkipped } = useCrypto();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,43 +158,36 @@ function App() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     return (localStorage.getItem('knot_view_mode') as 'grid' | 'list') || 'grid';
+  });
+  const [activeTab, setActiveTab] = useState<'notes' | 'todos'>('notes');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    return localStorage.getItem('knot_sidebar_open') !== 'false';
   });
 
   useEffect(() => {
     localStorage.setItem('knot_view_mode', viewMode);
   }, [viewMode]);
 
-  const handleToggleTag = (targetTag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(targetTag) ? prev.filter(t => t !== targetTag) : [...prev, targetTag]
-    );
-  };
-
-  const handleSaveNote = async (noteData: Partial<Note>) => {
-    try {
-      if (editingNote) {
-        await updateNote(editingNote.id, noteData);
-      } else {
-        await addNote(noteData as any);
-      }
-      setIsModalOpen(false);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  useEffect(() => {
+    localStorage.setItem('knot_sidebar_open', String(isSidebarOpen));
+  }, [isSidebarOpen]);
 
   const allTags = useMemo(() => {
-    const tags = new Set<string>();
-    notes.forEach(noteItem => {
-      noteItem.tags.forEach(t => tags.add(t));
-      noteItem.customFields.forEach(field => {
-        if (field.label.trim()) tags.add(field.label.trim());
-      });
-    });
-    return Array.from(tags).sort();
-  }, [notes]);
+    const noteTags = notes.flatMap(n => n.tags);
+    const todoTags = todos.flatMap(t => t.tags);
+    return Array.from(new Set([...noteTags, ...todoTags])).sort();
+  }, [notes, todos]);
+
+  const stats = useMemo(() => {
+    return {
+      notes: notes.length,
+      todos: todos.length,
+      active: activeTab === 'notes' ? notes.length : todos.length
+    };
+  }, [notes, todos, activeTab]);
 
   const filteredNotes = useMemo(() => {
     return notes.filter(noteItem => {
@@ -174,136 +203,236 @@ function App() {
     });
   }, [notes, searchQuery, selectedTags]);
 
+  const filteredTodos = useMemo(() => {
+    return todos.filter(todoItem => {
+      const matchesSearch = todoItem.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           todoItem.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const matchesTags = selectedTags.length === 0 || 
+                         selectedTags.every(t => todoItem.tags.includes(t));
+      
+      return matchesSearch && matchesTags;
+    });
+  }, [todos, searchQuery, selectedTags]);
+
   // ONLY show lock screen if we actually have encrypted notes AND user hasn't explicitly skipped unlocking them
   const anyEncrypted = useMemo(() => notes.some(n => n.isEncrypted), [notes]);
   const shouldShowLock = anyEncrypted && !masterKey && !isSkipped;
 
-  if (user && shouldShowLock) {
-    return (
-      <>
-        <GlobalStyles />
-        <LockScreen onUnlock={setKey} onSkip={() => setSkipped(true)} />
-      </>
-    );
+  const handleCreateNew = () => {
+    if (activeTab === 'notes') {
+      setEditingNote(null);
+    } else {
+      setEditingTodo(null);
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleEditNote = (note: Note) => {
+    setEditingNote(note);
+    setIsModalOpen(true);
+  };
+
+  const handleEditTodo = (todo: Todo) => {
+    setEditingTodo(todo);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveNote = async (noteData: Partial<Note>) => {
+    if (editingNote) {
+      await updateNote(editingNote.id, noteData);
+    } else {
+      await addNote(noteData as Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'userId'>);
+    }
+    setIsModalOpen(false);
+  };
+
+  const handleSaveTodo = async (todoData: Partial<Todo>) => {
+    if (editingTodo) {
+      await updateTodo(editingTodo.id, todoData);
+    } else {
+      await addTodo(todoData as Omit<Todo, 'id' | 'createdAt' | 'updatedAt' | 'userId'>);
+    }
+    setIsModalOpen(false);
+  };
+
+  if (!user) return <Login />;
+
+  if (shouldShowLock) {
+    return <LockScreen onUnlock={setKey} onSkip={() => setSkipped(true)} />;
   }
 
-  return (
-    <>
-      <GlobalStyles />
-      {!user ? (
-        <Login />
-      ) : (
-        <AppContainer>
-          <Header 
-            onThemeToggle={toggleTheme}
-            onSettingsClick={() => setIsSettingsOpen(true)}
-            themeMode={themeMode}
-            viewMode={viewMode}
-          />
+  const isLoading = activeTab === 'notes' ? notesLoading : todosLoading;
+  const currentData = activeTab === 'notes' ? filteredNotes : filteredTodos;
+  const isEmpty = !isLoading && currentData.length === 0;
 
+  return (
+    <AppLayout>
+      <GlobalStyles />
+      <Toaster position="bottom-center" />
+      
+      <Sidebar 
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        stats={stats}
+      />
+
+      <ContentWrapper>
+        <Header 
+          onThemeToggle={toggleTheme}
+          onSettingsClick={() => setIsSettingsOpen(true)}
+          themeMode={themeMode}
+          viewMode={viewMode}
+        />
+        
+        <Main>
           <FilterToolbar 
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             allTags={allTags}
             selectedTags={selectedTags}
-            toggleTag={handleToggleTag}
+            toggleTag={(tag) => {
+              setSelectedTags(prev => 
+                prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+              );
+            }}
             viewMode={viewMode}
-            onViewModeToggle={() => setViewMode(prev => prev === 'grid' ? 'list' : 'grid')}
+            onViewModeToggle={() => {
+              setViewMode(prev => prev === 'grid' ? 'list' : 'grid');
+            }}
+            activeTab={activeTab}
           />
-          
-          <MainContent $viewMode={viewMode}>
-            {!notesLoading && filteredNotes.length === 0 && (
-               <EmptyState>
-                 <p>{searchQuery || selectedTags.length > 0 ? t('app.noMatch') : t('app.emptyState')}</p>
-                 {!searchQuery && selectedTags.length === 0 && (
-                   <AddButton onClick={() => setIsModalOpen(true)}>
-                      <Plus size={18} /> {t('app.newNote')}
-                   </AddButton>
-                 )}
-               </EmptyState>
-            )}
 
-            {notesLoading ? (
-              <NotesGrid $viewMode={viewMode}>
-                {[...Array(6)].map((_, i) => (
-                  <NoteSkeleton key={i} />
-                ))}
-              </NotesGrid>
-            ) : (
-              <NotesGrid $viewMode={viewMode}>
-                {filteredNotes.map(note => (
+          {isLoading ? (
+            <ContentGrid $viewMode={viewMode}>
+              {[...Array(6)].map((_, i) => <NoteSkeleton key={i} />)}
+            </ContentGrid>
+          ) : isEmpty ? (
+            <EmptyState>
+              <EmptyIcon>
+                <Plus size={32} />
+              </EmptyIcon>
+              <EmptyTitle>
+                {activeTab === 'notes' ? t('app.emptyState') : t('app.emptyStateTodos')}
+              </EmptyTitle>
+              <EmptyText>
+                {activeTab === 'notes' ? t('app.noMatch') : t('app.noMatchTodos')}
+              </EmptyText>
+              <CreateButton onClick={handleCreateNew}>
+                <Plus size={18} /> {activeTab === 'notes' ? t('app.newNote') : t('app.newTodo')}
+              </CreateButton>
+            </EmptyState>
+          ) : (
+            <ContentGrid $viewMode={viewMode}>
+              {activeTab === 'notes' ? (
+                filteredNotes.map(note => (
                   <NoteCard 
                     key={note.id} 
                     note={note} 
-                    onToggleTag={handleToggleTag}
-                    onClick={() => {
-                      setEditingNote(note);
-                      setIsModalOpen(true);
+                    onClick={() => handleEditNote(note)}
+                    onToggleTag={(tag) => {
+                      setSelectedTags(prev => 
+                        prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+                      );
                     }}
                     onShare={() => {
+                      setEditingTodo(null);
                       setEditingNote(note);
                       setIsShareModalOpen(true);
                     }}
                   />
-                ))}
-              </NotesGrid>
-            )}
-          </MainContent>
-
-          <Footer>
-            &copy; {new Date().getFullYear()} {t('app.title')}. {t('common.allRightsReserved')}
-          </Footer>
-
-          {isModalOpen && (
-            <NoteModal 
-              note={editingNote}
-              allTags={allTags}
-              onClose={() => setIsModalOpen(false)}
-              onSave={handleSaveNote}
-              onDelete={(id) => {
-                deleteNote(id);
-                setIsModalOpen(false);
-              }}
-              onShare={(id, sharedWith) => shareNote(id, sharedWith)}
-            />
+                ))
+              ) : (
+                filteredTodos.map(todo => (
+                  <TodoCard 
+                    key={todo.id} 
+                    todo={todo} 
+                    onClick={() => handleEditTodo(todo)}
+                    onToggleTag={(tag) => {
+                      setSelectedTags(prev => 
+                        prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+                      );
+                    }}
+                    onShare={() => {
+                      setEditingNote(null);
+                      setEditingTodo(todo);
+                      setIsShareModalOpen(true);
+                    }}
+                  />
+                ))
+              )}
+            </ContentGrid>
           )}
+        </Main>
 
-          <Suspense fallback={null}>
-            {isSettingsOpen && (
-              <SettingsModal onClose={() => setIsSettingsOpen(false)} />
-            )}
+        <Footer>
+          &copy; {new Date().getFullYear()} {t('app.title')}. {t('common.allRightsReserved')}
+        </Footer>
+      </ContentWrapper>
 
-            {isShareModalOpen && editingNote && (
-              <ShareModal 
-                note={editingNote}
-                onClose={() => setIsShareModalOpen(false)}
-                onShare={(sharedWith) => {
-                  shareNote(editingNote.id, sharedWith);
-                }}
-              />
-            )}
-          </Suspense>
+      <Navigation 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+      />
 
-          <FAB 
-            onClick={() => {
-              setEditingNote(null);
-              setIsModalOpen(true);
-            }} 
+      <FAB onClick={handleCreateNew} />
+
+      {isModalOpen && activeTab === 'notes' && (
+        <NoteModal 
+          note={editingNote}
+          allTags={allTags}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveNote}
+          onDelete={(id) => {
+            deleteNote(id);
+            setIsModalOpen(false);
+          }}
+          onShare={(sharedWith: any[]) => {
+            if (editingNote) {
+              shareNote(editingNote.id, sharedWith);
+            }
+          }}
+        />
+      )}
+
+      {isModalOpen && activeTab === 'todos' && (
+        <TodoModal 
+          todo={editingTodo}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveTodo}
+          onDelete={(id: string) => {
+            deleteTodo(id);
+            setIsModalOpen(false);
+          }}
+          onShare={(sharedWith: any[]) => {
+            if (editingTodo) {
+              shareTodo(editingTodo.id, sharedWith);
+            }
+          }}
+        />
+      )}
+
+      <Suspense fallback={null}>
+        {isSettingsOpen && (
+          <SettingsModal 
+            onClose={() => setIsSettingsOpen(false)}
           />
-
-          <Toaster 
-            position="bottom-right"
-            toastOptions={{
-              style: {
-                background: currentTheme.colors.surface,
-                color: currentTheme.colors.text,
-                border: `1px solid ${currentTheme.colors.border}`,
-              },
+        )}
+        {isShareModalOpen && (editingNote || editingTodo) && (
+          <ShareModal 
+            item={(editingNote || editingTodo)!}
+            onClose={() => setIsShareModalOpen(false)}
+            onShare={(sharedWith) => {
+              if (editingNote) shareNote(editingNote.id, sharedWith);
+              else if (editingTodo) shareTodo(editingTodo.id, sharedWith);
             }}
           />
-        </AppContainer>
-      )}
-    </>
+        )}
+      </Suspense>
+    </AppLayout>
   );
 }
 

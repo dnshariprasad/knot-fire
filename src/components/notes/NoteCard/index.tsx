@@ -1,9 +1,8 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import type { Note } from '../../../types';
 import { 
   Hash, 
-  Users, Lock as LockIcon,
+  Users, 
   Share2
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
@@ -17,13 +16,10 @@ interface NoteCardProps {
 }
 
 export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, onShare }) => {
-  const { t } = useTranslation();
   const { user } = useAuth();
 
   const isSharedWithMe = note.userId !== user?.uid;
   const collaboratorsCount = note.sharedWithUids?.length || 0;
-
-
 
   return (
     <S.Card
@@ -34,18 +30,18 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
       onClick={onClick}
     >
       <S.Header>
-        {note.title && <S.Title $blurred={note.isPrivate}>{note.title}</S.Title>}
-        {!note.title && !note.isPrivate && <S.HeaderSpacer />}
+        {note.title && <S.Title>{note.title}</S.Title>}
+        {!note.title && <S.HeaderSpacer />}
       </S.Header>
 
-      {(note.isPrivate || note.content) && (
-        <S.Content $blurred={note.isPrivate}>
-          {note.isPrivate ? t('notes.privateHidden') : note.content}
+      {note.content && (
+        <S.Content>
+          {note.content}
         </S.Content>
       )}
 
       {note.tags.length > 0 && (
-        <S.TagContainer $blurred={note.isPrivate}>
+        <S.TagContainer>
           {note.tags.map(tag => (
             <S.Tag key={tag} onClick={(e) => { e.stopPropagation(); onToggleTag(tag); }}>
               <Hash size={8} /> {tag}
@@ -55,7 +51,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
       )}
 
 
-      <S.Footer $blurred={note.isPrivate}>
+      <S.Footer>
         <S.DateInfo>
           {new Date(note.updatedAt || note.createdAt).toLocaleDateString(undefined, {
             month: 'short',
@@ -104,13 +100,6 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
         </S.BadgeGroup>
       </S.Footer>
 
-      {note.isPrivate && (
-        <S.PrivateOverlay>
-          <S.PrivateBadge>
-            <LockIcon size={14} /> {t('notes.private')}
-          </S.PrivateBadge>
-        </S.PrivateOverlay>
-      )}
     </S.Card>
   );
 };

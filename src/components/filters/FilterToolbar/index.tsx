@@ -12,6 +12,7 @@ interface FilterToolbarProps {
   allTags: string[];
   viewMode: 'grid' | 'list';
   onViewModeToggle: () => void;
+  activeTab: 'notes' | 'todos';
 }
 
 export const FilterToolbar: React.FC<FilterToolbarProps> = ({
@@ -21,7 +22,8 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
   toggleTag,
   allTags,
   viewMode,
-  onViewModeToggle
+  onViewModeToggle,
+  activeTab
 }) => {
   const { t } = useTranslation();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -41,7 +43,7 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
         <S.SearchRow>
           <S.ToolbarButton 
             onClick={onViewModeToggle}
-            title={viewMode === 'grid' ? 'Switch to List' : 'Switch to Grid'}
+            title={viewMode === 'grid' ? t('app.viewList') : t('app.viewGrid')}
           >
             {viewMode === 'grid' ? <List size={20} /> : <LayoutGrid size={20} />}
           </S.ToolbarButton>
@@ -49,7 +51,7 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
           <S.SearchWrapper>
             <S.SearchIcon size={18} />
             <S.SearchInput
-              placeholder={t('app.searchPlaceholder')}
+              placeholder={activeTab === 'notes' ? t('app.searchPlaceholder') : t('app.searchPlaceholderTodos') || 'Search tasks...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

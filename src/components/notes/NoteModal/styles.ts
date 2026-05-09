@@ -96,8 +96,8 @@ export const Input = styled.input`
   width: 100%;
   background: ${({ theme }) => theme.colors.surfaceLight};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  padding: 0.875rem 1.25rem;
   color: ${({ theme }) => theme.colors.text};
   font-size: 0.9375rem;
   transition: all 0.2s ease;
@@ -114,8 +114,8 @@ export const TextArea = styled.textarea`
   min-height: 120px;
   background: ${({ theme }) => theme.colors.surfaceLight};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  padding: 1rem;
+  border-radius: 14px;
+  padding: 1.25rem;
   color: ${({ theme }) => theme.colors.text};
   font-size: 0.9375rem;
   line-height: 1.6;
@@ -136,7 +136,7 @@ export const TagInputWrapper = styled.div`
   padding: 0.75rem;
   background: ${({ theme }) => theme.colors.surfaceLight};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  border-radius: 14px;
   min-height: 42px;
   align-items: center;
 
@@ -241,10 +241,10 @@ export const QuickActionToolbar = styled.div`
   min-width: 0;
 `;
 
-export const QuickActionButton = styled.button`
-  background: ${({ theme }) => theme.colors.surfaceLight};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  color: ${({ theme }) => theme.colors.textMuted};
+export const QuickActionButton = styled.button<{ $active?: boolean }>`
+  background: ${({ theme, $active }) => $active ? theme.colors.primary + '10' : theme.colors.surfaceLight};
+  border: 1px solid ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
+  color: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.textMuted};
   padding: 0.45rem 0.75rem;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -682,6 +682,49 @@ export const PopoverItem = styled(DropdownMenu.Item)<{ $danger?: boolean }>`
   }
 `;
 
+export const DropdownContent = styled(DropdownMenu.Content)`
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  min-width: 180px;
+  z-index: 3000;
+  animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`;
+
+export const DropdownItem = styled(DropdownMenu.Item)`
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+
+  &:hover, &:focus {
+    background: ${({ theme }) => theme.colors.primary}15;
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &.danger {
+    color: ${({ theme }) => theme.colors.error};
+    &:hover, &:focus {
+      background: ${({ theme }) => theme.colors.error}15;
+      color: ${({ theme }) => theme.colors.error};
+    }
+  }
+`;
+
 export const ModalTitleWrapper = styled.div`
   display: flex;
   align-items: center;
@@ -801,6 +844,8 @@ export const PeriodBadge = styled.span`
 
 export const FooterActions = styled.div`
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.75rem;
   width: 100%;
 `;
@@ -879,8 +924,11 @@ export const AbsoluteIconButton = styled(IconButton)`
 `;
 
 export const FixedActionButton = styled(IconButton)`
-  width: 48px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  padding: 0;
+  margin-right: auto;
 `;
 
 export const ActionIconButton = styled(IconButton)`
@@ -891,3 +939,194 @@ export const RevealIconButton = styled(IconButton)`
   padding: 0.25rem;
   margin-left: auto;
 `;
+
+export const TodoContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+`;
+
+export const TodoItemRow = styled(motion.div)<{ $completed?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: ${({ theme }) => theme.colors.surfaceLight};
+  padding: 0.75rem 1rem;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  border: 1px solid ${({ theme, $completed }) => $completed ? theme.colors.primary + '30' : theme.colors.border};
+  opacity: ${({ $completed }) => $completed ? 0.7 : 1};
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.surface};
+  }
+`;
+
+export const TodoCheckbox = styled.button<{ $checked: boolean }>`
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid ${({ theme, $checked }) => $checked ? theme.colors.primary : theme.colors.textMuted + '40'};
+  background: ${({ theme, $checked }) => $checked ? theme.colors.primary : 'transparent'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+export const TodoText = styled.input<{ $completed?: boolean }>`
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: ${({ theme, $completed }) => $completed ? theme.colors.textMuted : theme.colors.text};
+  text-decoration: ${({ $completed }) => $completed ? 'line-through' : 'none'};
+  font-size: 0.9375rem;
+  font-weight: 500;
+  outline: none;
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textMuted};
+    opacity: 0.4;
+    text-decoration: none;
+  }
+`;
+
+export const TodoDueDate = styled.input`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: 0.75rem;
+  font-weight: 700;
+  outline: none;
+  width: 100px;
+  cursor: pointer;
+  text-align: right;
+
+  &::-webkit-calendar-picker-indicator {
+    display: none;
+  }
+`;
+
+export const TodoDeleteButton = styled.button`
+  color: ${({ theme }) => theme.colors.textMuted};
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0.5;
+
+  &:hover {
+    opacity: 1;
+    background: ${({ theme }) => theme.colors.error + '10'};
+    color: ${({ theme }) => theme.colors.error};
+  }
+`;
+
+export const TodoAddRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 2px dashed ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  margin-top: 0.5rem;
+  transition: all 0.2s ease;
+
+  &:focus-within {
+    border-color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.surfaceLight};
+  }
+`;
+
+export const TodoAddInput = styled.input`
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.9375rem;
+  font-weight: 600;
+  outline: none;
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textMuted};
+    opacity: 0.6;
+  }
+`;
+
+export const EmptyTodoState = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: 0.875rem;
+  font-style: italic;
+`;
+
+export const TodoProgressHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+`;
+
+export const ProgressLabel = styled.span`
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: ${({ theme }) => theme.colors.textMuted};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+`;
+
+export const ProgressBarContainer = styled.div`
+  width: 100%;
+  height: 6px;
+  background: ${({ theme }) => theme.colors.surfaceLight};
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+`;
+
+export const ProgressBarFill = styled.div<{ $width: number }>`
+  width: ${({ $width }) => $width}%;
+  height: 100%;
+  background: ${({ theme }) => theme.colors.primary};
+  transition: width 0.3s ease;
+`;
+
+export const SharedBadge = styled.div<{ $variant?: 'primary' | 'secondary' }>`
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  
+  ${({ $variant, theme }) => $variant === 'secondary' ? `
+    background: ${theme.colors.secondary || '#6366f1'}15;
+    color: ${theme.colors.secondary || '#6366f1'};
+    border: 1px solid ${theme.colors.secondary || '#6366f1'}33;
+  ` : `
+    background: ${theme.colors.primary}15;
+    color: ${theme.colors.primary};
+    border: 1px solid ${theme.colors.primary}33;
+  `}
+
+  span {
+    line-height: 1;
+  }
+`;
+

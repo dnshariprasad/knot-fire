@@ -85,6 +85,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                 <span>{t('settings.telugu')}</span>
                 <span>తెలుగు</span>
               </S.LanguageButton>
+              <S.LanguageButton 
+                $active={i18n.language === 'hi'} 
+                onClick={() => i18n.changeLanguage('hi')}
+              >
+                <span>{t('settings.hindi')}</span>
+                <span>हिन्दी</span>
+              </S.LanguageButton>
             </S.LanguageGrid>
           </S.Section>
         ) : (

@@ -6,9 +6,9 @@ export const HeaderContainer = styled.header`
 `;
 
 export const HeaderContent = styled.div<{ $viewMode?: 'grid' | 'list' }>`
-  max-width: ${({ $viewMode }) => $viewMode === 'list' ? '800px' : '1200px'};
+  max-width: ${({ $viewMode }) => $viewMode === 'list' ? '900px' : '1300px'};
   margin: 0 auto;
-  padding: 2rem 1.5rem 1rem 1.5rem;
+  padding: 1.5rem 1.5rem 0.5rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -67,3 +67,5 @@ export const IconButton = styled.button`
     color: ${({ theme }) => theme.colors.text};
   }
 `;
+
+

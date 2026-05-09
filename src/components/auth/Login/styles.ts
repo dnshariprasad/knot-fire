@@ -14,7 +14,7 @@ export const Container = styled.div`
 export const Card = styled(motion.div)`
   background: ${({ theme }) => theme.colors.surface};
   padding: 2.5rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  border-radius: 20px;
   box-shadow: ${({ theme }) => theme.shadows.lg};
   width: 100%;
   max-width: 400px;
@@ -56,37 +56,41 @@ export const Label = styled.label`
 `;
 
 export const Input = styled.input`
-  padding: 0.75rem 1rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  padding: 0.875rem 1.25rem;
+  border-radius: 14px;
   background: ${({ theme }) => theme.colors.surfaceLight};
   border: 1px solid ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.text};
   font-size: 1rem;
+  transition: all 0.2s ease;
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primary}33;
+    background: ${({ theme }) => theme.colors.surface};
+    outline: none;
   }
 `;
 
 export const Button = styled.button<{ $variant?: 'primary' | 'outline' }>`
   width: 100%;
-  padding: 0.75rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-weight: 600;
+  padding: 0.875rem 1.5rem;
+  border-radius: 14px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   
-  background: ${({ theme, $variant }) => $variant === 'outline' ? 'transparent' : theme.colors.primary};
-  color: white;
+  background: ${({ theme, $variant }) => $variant === 'outline' ? theme.colors.surfaceLight : theme.colors.primary};
+  color: ${({ theme, $variant }) => $variant === 'outline' ? theme.colors.text : 'white'};
   border: ${({ theme, $variant }) => $variant === 'outline' ? `1px solid ${theme.colors.border}` : 'none'};
   cursor: pointer;
 
   &:hover {
-    background: ${({ theme, $variant }) => $variant === 'outline' ? theme.colors.surfaceLight : theme.colors.primaryDark};
+    background: ${({ theme, $variant }) => $variant === 'outline' ? theme.colors.border + '22' : theme.colors.primaryDark};
     transform: translateY(-1px);
+    ${({ $variant, theme }) => $variant !== 'outline' && `box-shadow: 0 4px 12px ${theme.colors.primary}44;`}
   }
 
   &:disabled {

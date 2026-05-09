@@ -29,20 +29,14 @@ const Message = styled.p`
   line-height: 1.6;
 `;
 
-const Actions = styled.div`
-  display: flex;
-  gap: 1rem;
-  width: 100%;
-  margin-top: 0.5rem;
-`;
 
 const Button = styled.button<{ $variant?: 'primary' | 'danger' | 'outline' }>`
   flex: 1;
-  padding: 0.75rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  padding: 0.875rem;
+  border-radius: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
   font-size: 0.875rem;
 
@@ -50,13 +44,21 @@ const Button = styled.button<{ $variant?: 'primary' | 'danger' | 'outline' }>`
     if ($variant === 'danger') return `
       background: ${theme.colors.error};
       color: white;
-      &:hover { background: ${theme.colors.error}dd; }
+      box-shadow: 0 4px 12px ${theme.colors.error}44;
+      &:hover { 
+        background: ${theme.colors.error}dd;
+        transform: translateY(-1px);
+      }
     `;
     if ($variant === 'outline') return `
-      background: transparent;
+      background: ${theme.colors.surfaceLight};
       border: 1px solid ${theme.colors.border};
       color: ${theme.colors.text};
-      &:hover { background: ${theme.colors.surfaceLight}; }
+      &:hover { 
+        background: ${theme.colors.border}22;
+        border-color: ${theme.colors.primary};
+        transform: translateY(-1px);
+      }
     `;
     return '';
   }}
@@ -92,13 +94,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       title={title}
       maxWidth="400px"
       showCloseButton={!isLoading}
-    >
-      <ConfirmContent>
-        <IconWrapper>
-          <AlertTriangle size={32} />
-        </IconWrapper>
-        <Message>{message}</Message>
-        <Actions>
+      footer={
+        <>
           <Button 
             $variant="outline" 
             onClick={onClose} 
@@ -113,7 +110,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           >
             {isLoading ? t('common.loading') : (confirmText || t('common.delete'))}
           </Button>
-        </Actions>
+        </>
+      }
+    >
+      <ConfirmContent>
+        <IconWrapper>
+          <AlertTriangle size={32} />
+        </IconWrapper>
+        <Message>{message}</Message>
       </ConfirmContent>
     </Modal>
   );

@@ -5,7 +5,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 export const Card = styled(motion.div)`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  border-radius: 14px;
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -61,7 +61,7 @@ export const MoreButton = styled.button`
 export const Popover = styled(DropdownMenu.Content)`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  border-radius: 14px;
   box-shadow: ${({ theme }) => theme.shadows.lg};
   width: 140px;
   overflow: hidden;
@@ -120,8 +120,8 @@ export const TagContainer = styled.div<{ $blurred?: boolean }>`
 export const Tag = styled.span`
   background: ${({ theme }) => theme.colors.surfaceLight};
   color: ${({ theme }) => theme.colors.text};
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
+  padding: 0.15rem 0.5rem;
+  border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.colors.border};
   font-size: 0.7rem;
   font-weight: 700;
@@ -210,7 +210,7 @@ export const FieldBadge = styled.div<{ $variant?: 'primary'; $clickable?: boolea
   color: ${({ theme, $variant }) => $variant === 'primary' ? theme.colors.primary : theme.colors.textMuted};
   border: 1px solid ${({ theme, $variant }) => $variant === 'primary' ? theme.colors.primary + '25' : theme.colors.border};
   padding: 0.15rem 0.4rem;
-  border-radius: 6px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -257,3 +257,77 @@ export const BadgeGroup = styled.div`
   gap: 0.4rem;
   align-items: center;
 `;
+
+export const TodoPreview = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.5rem 0;
+`;
+
+export const TodoPreviewItem = styled.div<{ $completed?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: ${({ theme, $completed }) => $completed ? theme.colors.textMuted : theme.colors.text};
+  text-decoration: ${({ $completed }) => $completed ? 'line-through' : 'none'};
+  opacity: ${({ $completed }) => $completed ? 0.6 : 1};
+
+  svg {
+    flex-shrink: 0;
+    color: ${({ theme, $completed }) => $completed ? theme.colors.primary : theme.colors.border};
+  }
+`;
+
+export const TodoProgress = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: ${({ theme }) => theme.colors.border}22;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+  overflow: hidden;
+  z-index: 5;
+`;
+
+export const TodoProgressText = styled.div`
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: ${({ theme }) => theme.colors.primary};
+  background: ${({ theme }) => theme.colors.primary + '10'};
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  z-index: 5;
+`;
+
+export const TodoProgressBar = styled.div`
+  width: 100%;
+  height: 100%;
+`;
+
+export const TodoProgressFill = styled.div<{ $width: number }>`
+  width: ${({ $width }) => $width}%;
+  height: 100%;
+  background: ${({ theme }) => theme.colors.primary};
+  transition: width 0.3s ease;
+`;
+
+export const TodoBadge = styled.div<{ $completed?: boolean }>`
+  background: ${({ theme, $completed }) => $completed ? theme.colors.primary : 'transparent'};
+  color: ${({ theme, $completed }) => $completed ? 'white' : theme.colors.primary};
+  border: 1px solid ${({ theme }) => theme.colors.primary};
+  padding: 0.1rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+`;
+

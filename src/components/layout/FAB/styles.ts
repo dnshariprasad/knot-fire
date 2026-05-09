@@ -20,7 +20,7 @@ export const FABContainer = styled(motion.button)`
   
   @media (max-width: 768px) {
     right: 1.5rem;
-    bottom: 1.5rem;
+    bottom: 5.5rem;
   }
   
   &:hover {

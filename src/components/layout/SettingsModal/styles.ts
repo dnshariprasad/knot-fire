@@ -25,7 +25,7 @@ export const Overlay = styled(motion.div)`
 export const Modal = styled(motion.div)`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  border-radius: 20px;
   width: 100%;
   max-width: 500px;
   display: flex;
@@ -35,7 +35,7 @@ export const Modal = styled(motion.div)`
 
   @media (max-width: 768px) {
     max-width: 100%;
-    border-radius: 12px 12px 0 0;
+    border-radius: 20px 20px 0 0;
     border-bottom: none;
   }
 `;
@@ -107,7 +107,7 @@ export const StatusCard = styled.div<{ $active: boolean }>`
   background: ${({ theme, $active }) => $active ? theme.colors.primary + '10' : theme.colors.surfaceLight};
   border: 1px solid ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
   padding: 1.25rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  border-radius: 14px;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -144,35 +144,40 @@ export const Input = styled.input`
   width: 100%;
   background: ${({ theme }) => theme.colors.surfaceLight};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  padding: 0.875rem 1.25rem;
   color: ${({ theme }) => theme.colors.text};
   font-size: 1rem;
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.surface};
     outline: none;
   }
 `;
 
 export const Button = styled.button<{ $variant?: 'primary' | 'danger' | 'outline' }>`
-  padding: 0.75rem 1.25rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  padding: 0.875rem 1.5rem;
+  border-radius: 14px;
   font-weight: 700;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
   border: none;
 
   ${({ $variant, theme }) => {
     if ($variant === 'primary') return `
       background: ${theme.colors.primary};
       color: white;
-      &:hover { background: ${theme.colors.primaryDark}; }
+      box-shadow: 0 4px 12px ${theme.colors.primary}44;
+      &:hover { 
+        background: ${theme.colors.primaryDark};
+        transform: translateY(-1px);
+      }
     `;
     if ($variant === 'danger') return `
       background: ${theme.colors.error + '15'};
@@ -180,10 +185,13 @@ export const Button = styled.button<{ $variant?: 'primary' | 'danger' | 'outline
       &:hover { background: ${theme.colors.error + '25'}; }
     `;
     return `
-      background: transparent;
+      background: ${theme.colors.surfaceLight};
       border: 1px solid ${theme.colors.border};
       color: ${theme.colors.text};
-      &:hover { background: ${theme.colors.surfaceLight}; }
+      &:hover { 
+        background: ${theme.colors.border}22;
+        border-color: ${theme.colors.primary};
+      }
     `;
   }}
 `;
@@ -209,7 +217,7 @@ export const WarningBox = styled.div`
   background: #fef2f2;
   border: 1px solid #fecaca;
   padding: 1rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  border-radius: 14px;
   display: flex;
   gap: 0.75rem;
   color: #991b1b;
@@ -226,15 +234,15 @@ export const LanguageGrid = styled.div`
 export const LanguageButton = styled.button<{ $active: boolean }>`
   background: ${({ theme, $active }) => $active ? theme.colors.primary + '10' : theme.colors.surfaceLight};
   border: 1px solid ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
-  padding: 1rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  padding: 1.25rem;
+  border-radius: 14px;
   color: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.text};
   font-weight: ${({ $active }) => $active ? '700' : '500' };
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  transition: all 0.2s ease;
+  gap: 0.375rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
 
   span:last-child {
@@ -246,6 +254,7 @@ export const LanguageButton = styled.button<{ $active: boolean }>`
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
     background: ${({ theme }) => theme.colors.primary + '05'};
+    transform: translateY(-2px);
   }
 `;
 
