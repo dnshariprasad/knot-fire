@@ -81,6 +81,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ item, onClose, onShare }
       onClose={onClose}
       title={<><UserPlus size={20} /> {t('notes.shareWith')}</>}
       maxWidth="500px"
+      data-testid="share-modal"
     >
       <S.Content>
         <S.ShareInputGroup>

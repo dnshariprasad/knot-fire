@@ -14,9 +14,10 @@ interface TodoCardProps {
   onClick: () => void;
   onToggleTag: (tag: string) => void;
   onShare: () => void;
+  'data-testid'?: string;
 }
 
-export const TodoCard: React.FC<TodoCardProps> = ({ todo, onClick, onToggleTag, onShare }) => {
+export const TodoCard: React.FC<TodoCardProps> = ({ todo, onClick, onToggleTag, onShare, 'data-testid': testId }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
 
@@ -30,6 +31,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({ todo, onClick, onToggleTag, 
 
   return (
     <S.Card
+      data-testid={testId}
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}

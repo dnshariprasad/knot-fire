@@ -85,23 +85,18 @@ const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
+  padding: 8rem 2rem;
   text-align: center;
-  background: ${({ theme }) => theme.colors.surface};
-  border-radius: ${({ theme }) => theme.borderRadius.lg};
-  border: 1px dashed ${({ theme }) => theme.colors.border};
+  width: 100%;
 `;
 
 const EmptyIcon = styled.div`
-  width: 64px;
-  height: 64px;
-  background: ${({ theme }) => theme.colors.primary + '10'};
-  color: ${({ theme }) => theme.colors.primary};
-  border-radius: 50%;
+  color: ${({ theme }) => theme.colors.textMuted};
+  opacity: 0.3;
+  margin-bottom: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
 `;
 
 const EmptyTitle = styled.h3`
@@ -130,15 +125,27 @@ const Footer = styled.footer`
 const CreateButton = styled.button`
   background: ${({ theme }) => theme.colors.primary};
   color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-weight: 600;
+  padding: 0.875rem 1.75rem;
+  border-radius: 14px;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
   border: none;
   cursor: pointer;
-  margin-top: 1rem;
+  margin-top: 2rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px ${({ theme }) => theme.colors.primary}33;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px ${({ theme }) => theme.colors.primary}44;
+    filter: brightness(1.05);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 `;
 
 // Mobile only styles
@@ -278,6 +285,7 @@ function App() {
         onTabChange={setActiveTab}
         onOpenSettings={() => setIsSettingsOpen(true)}
         stats={stats}
+        data-testid="sidebar"
       />
 
       <ContentWrapper>
@@ -286,6 +294,7 @@ function App() {
           onSettingsClick={() => setIsSettingsOpen(true)}
           themeMode={themeMode}
           viewMode={viewMode}
+          data-testid="header"
         />
         
         <Main>
@@ -304,6 +313,7 @@ function App() {
               setViewMode(prev => prev === 'grid' ? 'list' : 'grid');
             }}
             activeTab={activeTab}
+            data-testid="filter-toolbar"
           />
 
           {isLoading ? (
@@ -311,9 +321,9 @@ function App() {
               {[...Array(6)].map((_, i) => <NoteSkeleton key={i} />)}
             </ContentGrid>
           ) : isEmpty ? (
-            <EmptyState>
+            <EmptyState data-testid="empty-state">
               <EmptyIcon>
-                <Plus size={32} />
+                <Plus size={48} />
               </EmptyIcon>
               <EmptyTitle>
                 {activeTab === 'notes' ? t('app.emptyState') : t('app.emptyStateTodos')}
@@ -321,7 +331,7 @@ function App() {
               <EmptyText>
                 {activeTab === 'notes' ? t('app.noMatch') : t('app.noMatchTodos')}
               </EmptyText>
-              <CreateButton onClick={handleCreateNew}>
+              <CreateButton onClick={handleCreateNew} data-testid="create-button-empty">
                 <Plus size={18} /> {activeTab === 'notes' ? t('app.newNote') : t('app.newTodo')}
               </CreateButton>
             </EmptyState>
@@ -343,6 +353,7 @@ function App() {
                       setEditingNote(note);
                       setIsShareModalOpen(true);
                     }}
+                    data-testid={`note-card-${note.id}`}
                   />
                 ))
               ) : (
@@ -361,6 +372,7 @@ function App() {
                       setEditingTodo(todo);
                       setIsShareModalOpen(true);
                     }}
+                    data-testid={`todo-card-${todo.id}`}
                   />
                 ))
               )}
@@ -376,9 +388,10 @@ function App() {
       <Navigation 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
+        data-testid="bottom-nav"
       />
 
-      <FAB onClick={handleCreateNew} />
+      <FAB onClick={handleCreateNew} data-testid="fab-create" />
 
       {isModalOpen && activeTab === 'notes' && (
         <NoteModal 

@@ -94,6 +94,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       title={title}
       maxWidth="400px"
       showCloseButton={!isLoading}
+      data-testid="confirm-modal"
       footer={
         <>
           <Button 

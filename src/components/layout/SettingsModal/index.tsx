@@ -43,6 +43,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
       isOpen={true}
       onClose={onClose}
       title={<><Settings size={20} /> {t('settings.title')}</>}
+      data-testid="settings-modal"
     >
       <S.TabList>
         <S.Tab 

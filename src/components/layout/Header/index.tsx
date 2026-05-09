@@ -8,18 +8,20 @@ interface HeaderProps {
   onSettingsClick: () => void;
   themeMode: 'light' | 'dark';
   viewMode?: 'grid' | 'list';
+  'data-testid'?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
   onThemeToggle,
   onSettingsClick,
   themeMode,
-  viewMode = 'grid'
+  viewMode = 'grid',
+  'data-testid': testId
 }) => {
   const { t } = useTranslation();
 
   return (
-    <S.HeaderContainer>
+    <S.HeaderContainer data-testid={testId}>
       <S.HeaderContent $viewMode={viewMode}>
         <S.LeftSection>
           <S.Logo onClick={() => window.location.reload()}>

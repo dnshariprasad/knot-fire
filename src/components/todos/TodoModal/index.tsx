@@ -121,6 +121,7 @@ export const TodoModal: React.FC<TodoModalProps> = ({
       title={modalTitle}
       maxWidth="600px"
       progress={progressPercent}
+      data-testid="todo-modal"
       footer={
         isEditing ? (
           <>

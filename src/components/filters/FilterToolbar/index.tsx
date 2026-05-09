@@ -13,6 +13,7 @@ interface FilterToolbarProps {
   viewMode: 'grid' | 'list';
   onViewModeToggle: () => void;
   activeTab: 'notes' | 'todos';
+  'data-testid'?: string;
 }
 
 export const FilterToolbar: React.FC<FilterToolbarProps> = ({
@@ -23,7 +24,8 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
   allTags,
   viewMode,
   onViewModeToggle,
-  activeTab
+  activeTab,
+  'data-testid': testId
 }) => {
   const { t } = useTranslation();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -39,7 +41,7 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
 
   return (
     <>
-      <S.ToolbarContainer $viewMode={viewMode}>
+      <S.ToolbarContainer $viewMode={viewMode} data-testid={testId}>
         <S.SearchRow>
           <S.ToolbarButton 
             onClick={onViewModeToggle}

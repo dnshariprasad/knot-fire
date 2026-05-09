@@ -12,6 +12,7 @@ interface ModalProps {
   showCloseButton?: boolean;
   progress?: number;
   footer?: ReactNode;
+  'data-testid'?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -22,7 +23,8 @@ export const Modal: React.FC<ModalProps> = ({
   maxWidth,
   showCloseButton = true,
   progress,
-  footer
+  footer,
+  'data-testid': testId
 }) => {
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
 
@@ -40,9 +42,11 @@ export const Modal: React.FC<ModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
+          data-testid={testId}
         >
           <S.ModalContainer
             $maxWidth={maxWidth}
+            data-testid={testId ? `${testId}-content` : undefined}
             variants={variants}
             initial="initial"
             animate="animate"

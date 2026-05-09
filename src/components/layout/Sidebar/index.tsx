@@ -22,6 +22,7 @@ interface SidebarProps {
     notes: number;
     todos: number;
   };
+  'data-testid'?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -30,13 +31,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onTabChange,
   onOpenSettings,
-  stats
+  stats,
+  'data-testid': testId
 }) => {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
 
   return (
-    <S.SidebarContainer $isOpen={isOpen}>
+    <S.SidebarContainer $isOpen={isOpen} data-testid={testId}>
       <S.SidebarHeader $isOpen={isOpen}>
         <S.LogoSection $isOpen={isOpen}>
           <img src="/favicon.svg" alt="Knot" width="24" height="24" />

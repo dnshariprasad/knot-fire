@@ -167,6 +167,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({
       onClose={onClose}
       title={modalTitle}
       maxWidth="800px"
+      data-testid="note-modal"
       footer={
         isEditing ? (
           <>
