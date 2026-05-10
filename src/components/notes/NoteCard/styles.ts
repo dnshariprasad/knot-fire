@@ -112,7 +112,7 @@ export const TagContainer = styled.div<{ $blurred?: boolean }>`
   display: flex;
   flex-wrap: wrap;
   gap: 0.375rem;
-  margin-top: 0.25rem;
+  margin-top: 0.75rem;
   filter: ${({ $blurred }) => $blurred ? 'blur(4px)' : 'none'};
   opacity: ${({ $blurred }) => $blurred ? 0.2 : 1};
 `;
@@ -236,8 +236,9 @@ export const Footer = styled.div<{ $blurred?: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
   padding-top: 0.75rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
   filter: ${({ $blurred }) => $blurred ? 'blur(4px)' : 'none'};
   opacity: ${({ $blurred }) => $blurred ? 0.3 : 1};
 `;

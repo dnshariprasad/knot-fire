@@ -1,0 +1,66 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. User Profiles
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 2. Notes
+    match /notes/{noteId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid || 
+        (resource.data.sharedWithUids != null && request.auth.uid in resource.data.sharedWithUids)
+      );
+      allow update: if request.auth != null && (
+        resource.data.userId == request.auth.uid || 
+        (
+          resource.data.sharedWithUids != null &&
+          request.auth.uid in resource.data.sharedWithUids && 
+          resource.data.sharedWith.any(s, s.userId == request.auth.uid && s.permission == 'write')
+        )
+      );
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // 3. Todos (Independent Collection)
+    match /todos/{todoId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid || 
+        (resource.data.sharedWithUids != null && request.auth.uid in resource.data.sharedWithUids)
+      );
+      allow update: if request.auth != null && (
+        resource.data.userId == request.auth.uid || 
+        (
+          resource.data.sharedWithUids != null &&
+          request.auth.uid in resource.data.sharedWithUids && 
+          resource.data.sharedWith.any(s, s.userId == request.auth.uid && s.permission == 'write')
+        )
+      );
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // 4. Cards (Independent Collection)
+    match /cards/{cardId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid || 
+        (resource.data.sharedWithUids != null && request.auth.uid in resource.data.sharedWithUids)
+      );
+      allow update: if request.auth != null && (
+        resource.data.userId == request.auth.uid || 
+        (
+          resource.data.sharedWithUids != null &&
+          request.auth.uid in resource.data.sharedWithUids && 
+          resource.data.sharedWith.any(s, s.userId == request.auth.uid && s.permission == 'write')
+        )
+      );
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+  }
+}

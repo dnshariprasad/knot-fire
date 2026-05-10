@@ -47,3 +47,31 @@ export interface Todo {
   ownerEmail?: string;
 }
 
+export interface Card {
+  id: string;
+  name: string;
+  cardholderName: string;
+  cardNumber: string;
+  expiryDate: string;
+  cvv: string;
+  pin?: string;
+  type: 'credit' | 'debit';
+  network: 'visa' | 'mastercard' | 'amex' | 'discover' | 'rupay' | 'other';
+  bankName: string;
+  
+  // Credit Card specific
+  billingDate?: number;
+  dueDate?: number;
+  limit?: number;
+  benefits?: string[];
+  
+  tags: string[];
+  createdAt: number;
+  updatedAt: number;
+  userId: string;
+  isEncrypted: boolean;
+
+  sharedWith?: SharedUser[];
+  sharedWithUids?: string[];
+  ownerEmail?: string;
+}

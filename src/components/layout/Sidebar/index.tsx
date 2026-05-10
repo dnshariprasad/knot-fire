@@ -8,7 +8,8 @@ import {
   Settings,
   LogOut,
   User,
-  Lock
+  Lock,
+  CreditCard
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useCrypto } from '../../../context/CryptoContext';
@@ -17,12 +18,13 @@ import * as S from './styles';
 interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
-  activeTab: 'notes' | 'todos';
-  onTabChange: (tab: 'notes' | 'todos') => void;
+  activeTab: 'notes' | 'todos' | 'cards';
+  onTabChange: (tab: 'notes' | 'todos' | 'cards') => void;
   onOpenSettings: () => void;
   stats: {
     notes: number;
     todos: number;
+    cards: number;
   };
   'data-testid'?: string;
 }
@@ -77,6 +79,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <>
               <S.NavItemLabel>{t('app.todos')}</S.NavItemLabel>
               <S.Badge>{stats.todos}</S.Badge>
+            </>
+          )}
+        </S.NavItem>
+
+        <S.NavItem 
+          $active={activeTab === 'cards'} 
+          onClick={() => onTabChange('cards')}
+          title={t('app.cards') || 'Cards'}
+        >
+          <CreditCard size={22} />
+          {isOpen && (
+            <>
+              <S.NavItemLabel>{t('app.cards') || 'Cards'}</S.NavItemLabel>
+              <S.Badge>{stats.cards}</S.Badge>
             </>
           )}
         </S.NavItem>

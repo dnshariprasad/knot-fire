@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import { encrypt, decrypt } from '../utils/cryptoUtils';
-import type { Note, Todo } from '../types';
+import type { Note, Todo, Card } from '../types';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import toast from 'react-hot-toast';
@@ -12,6 +12,8 @@ interface CryptoContextType {
   decryptNote: (note: any) => Note;
   encryptTodo: (todo: Partial<Todo>) => any;
   decryptTodo: (todo: any) => Todo;
+  encryptCard: (card: Partial<Card>) => any;
+  decryptCard: (card: any) => Card;
   clearKey: () => void;
   generateRecoveryKey: () => string;
   saveRecoveryData: (recoveryKey: string, userId: string) => Promise<void>;
@@ -34,15 +36,22 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const encryptNote = (note: Partial<Note>) => {
-    if (!note.isEncrypted || !masterKey) {
-      return { ...note, isEncrypted: !!note.isEncrypted && !!masterKey };
+    // If explicitly marked as unencrypted, return as-is (plain text)
+    if (note.isEncrypted === false) {
+      return { ...note, isEncrypted: false };
+    }
+
+    // If no master key exists, we cannot encrypt, so return as-is but keep isEncrypted false
+    if (!masterKey) {
+      return { ...note, isEncrypted: false };
     }
     
+    // Otherwise, encrypt all user data fields
     return {
       ...note,
       title: note.title ? encrypt(note.title, masterKey) : '',
       content: note.content ? encrypt(note.content, masterKey) : '',
-      tags: note.tags ? note.tags.map(t => encrypt(t, masterKey)) : [],
+      tags: note.tags || [], // Tags are never secured
       customFields: note.customFields ? note.customFields.map(f => ({
         label: encrypt(f.label, masterKey),
         value: encrypt(f.value, masterKey)
@@ -52,14 +61,26 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const decryptNote = (note: any): Note => {
-    if (!masterKey || !note.isEncrypted) return note as Note;
+    // If not encrypted in DB, return as is
+    if (!note.isEncrypted) return note as Note;
+    
+    // If encrypted but no master key, return as is (UI will mask it)
+    if (!masterKey) return note as Note;
 
     try {
+      const safeDecrypt = (val: string) => {
+        if (!val) return '';
+        if (val.startsWith('U2F')) {
+          try { return decrypt(val, masterKey); } catch (e) { return val; }
+        }
+        return val;
+      };
+
       return {
         ...note,
         title: decrypt(note.title, masterKey),
         content: decrypt(note.content, masterKey),
-        tags: note.tags ? note.tags.map((t: string) => decrypt(t, masterKey)) : [],
+        tags: note.tags ? note.tags.map((t: string) => safeDecrypt(t)) : [],
         customFields: note.customFields ? note.customFields.map((f: any) => ({
           label: decrypt(f.label, masterKey),
           value: decrypt(f.value, masterKey)
@@ -72,8 +93,8 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const encryptTodo = (todo: Partial<Todo>) => {
-    if (!todo.isEncrypted || !masterKey) {
-      return { ...todo, isEncrypted: !!todo.isEncrypted && !!masterKey };
+    if (todo.isEncrypted === false || !masterKey) {
+      return { ...todo, isEncrypted: false };
     }
     
     return {
@@ -83,7 +104,7 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         ...item,
         text: encrypt(item.text, masterKey)
       })) : [],
-      tags: todo.tags ? todo.tags.map(t => encrypt(t, masterKey)) : [],
+      tags: todo.tags || [], // Tags are never secured
       isEncrypted: true
     };
   };
@@ -92,6 +113,14 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!masterKey || !todo.isEncrypted) return todo as Todo;
 
     try {
+      const safeDecrypt = (val: string) => {
+        if (!val) return '';
+        if (val.startsWith('U2F')) {
+          try { return decrypt(val, masterKey); } catch (e) { return val; }
+        }
+        return val;
+      };
+
       return {
         ...todo,
         title: decrypt(todo.title, masterKey),
@@ -99,11 +128,58 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           ...item,
           text: decrypt(item.text, masterKey)
         })) : [],
-        tags: todo.tags ? todo.tags.map((t: string) => decrypt(t, masterKey)) : []
+        tags: todo.tags ? todo.tags.map((t: string) => safeDecrypt(t)) : []
       };
     } catch (e) {
       console.error("Decryption failed", e);
       return todo as Todo;
+    }
+  };
+
+  const encryptCard = (card: Partial<Card>) => {
+    if (!masterKey) return card;
+    
+    return {
+      ...card,
+      cardNumber: card.cardNumber ? encrypt(card.cardNumber, masterKey) : '',
+      expiryDate: card.expiryDate ? encrypt(card.expiryDate, masterKey) : '',
+      cvv: card.cvv ? encrypt(card.cvv, masterKey) : '',
+      pin: card.pin ? encrypt(card.pin, masterKey) : '',
+      isEncrypted: true
+    };
+  };
+
+  const decryptCard = (card: any): Card => {
+    if (!masterKey || !card.isEncrypted) return card as Card;
+
+    try {
+      // Gracefully decrypt fields. If they are already plain text, decrypt() should handle it or return as is
+      // But usually our decrypt() might throw if it's not a valid AES string.
+      // So we wrap each one or check if it looks encrypted.
+      const safeDecrypt = (val: string) => {
+        if (!val) return '';
+        // If it looks like AES encrypted string (starts with U2F...)
+        if (val.startsWith('U2F')) {
+          try { return decrypt(val, masterKey); } catch (e) { return val; }
+        }
+        return val;
+      };
+
+      return {
+        ...card,
+        name: safeDecrypt(card.name),
+        cardholderName: safeDecrypt(card.cardholderName),
+        bankName: safeDecrypt(card.bankName),
+        cardNumber: decrypt(card.cardNumber, masterKey),
+        expiryDate: decrypt(card.expiryDate, masterKey),
+        cvv: decrypt(card.cvv, masterKey),
+        pin: card.pin ? decrypt(card.pin, masterKey) : '',
+        benefits: card.benefits ? card.benefits.map((b: string) => safeDecrypt(b)) : [],
+        tags: card.tags ? card.tags.map((t: string) => safeDecrypt(t)) : []
+      };
+    } catch (e) {
+      console.error("Card decryption failed", e);
+      return card as Card;
     }
   };
 
@@ -156,6 +232,7 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     <CryptoContext.Provider value={{ 
       masterKey, setKey, encryptNote, decryptNote, 
       encryptTodo, decryptTodo,
+      encryptCard, decryptCard,
       clearKey,
       generateRecoveryKey,
       saveRecoveryData,

@@ -71,7 +71,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
         <S.TagContainer $blurred={isSecure}>
           {note.tags.map(tag => (
             <S.Tag key={tag} onClick={(e) => { e.stopPropagation(); onToggleTag(tag); }}>
-              <Hash size={8} /> {isSecure ? '••••' : tag}
+              <Hash size={8} /> {tag}
             </S.Tag>
           ))}
         </S.TagContainer>

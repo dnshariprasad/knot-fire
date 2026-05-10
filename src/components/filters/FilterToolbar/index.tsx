@@ -12,7 +12,7 @@ interface FilterToolbarProps {
   allTags: string[];
   viewMode: 'grid' | 'list';
   onViewModeToggle: () => void;
-  activeTab: 'notes' | 'todos';
+  activeTab: 'notes' | 'todos' | 'cards';
   'data-testid'?: string;
 }
 

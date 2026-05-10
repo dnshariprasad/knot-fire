@@ -84,7 +84,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({ todo, onClick, onToggleTag, 
         <S.TagContainer $blurred={isSecure}>
           {todo.tags.map(tag => (
             <S.Tag key={tag} onClick={(e) => { e.stopPropagation(); onToggleTag(tag); }}>
-              <Hash size={8} /> {isSecure ? '••••' : tag}
+              <Hash size={8} /> {tag}
             </S.Tag>
           ))}
         </S.TagContainer>

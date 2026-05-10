@@ -10,11 +10,14 @@ import { NoteCard } from './components/notes/NoteCard';
 import { NoteModal } from './components/notes/NoteModal';
 import { TodoCard } from './components/todos/TodoCard';
 import { TodoModal } from './components/todos/TodoModal';
+import { CardCard } from './components/cards/CardCard';
+import { CardModal } from './components/cards/CardModal';
 import { NoteSkeleton } from './components/notes/NoteSkeleton';
-import type { Note, Todo } from './types';
+import type { Note, Todo, Card } from './types';
 import { FilterToolbar } from './components/filters/FilterToolbar';
 import { useTodos } from './hooks/useTodos';
-import { Toaster } from 'react-hot-toast';
+import { useCards } from './hooks/useCards';
+import { Toaster, toast } from 'react-hot-toast';
 import { GlobalStyles } from './styles/GlobalStyles';
 import { useTheme } from './styles/ThemeContext';
 import { FAB } from './components/layout/FAB';
@@ -154,6 +157,7 @@ function App() {
   const { user } = useAuth();
   const { notes, loading: notesLoading, addNote, updateNote, deleteNote, shareNote } = useNotes();
   const { todos, loading: todosLoading, addTodo, updateTodo, deleteTodo, shareTodo } = useTodos();
+  const { cards, loading: cardsLoading, addCard, updateCard, deleteCard } = useCards();
   const { themeMode, toggleTheme } = useTheme();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -163,10 +167,11 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+  const [editingCard, setEditingCard] = useState<Card | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     return (localStorage.getItem('knot_view_mode') as 'grid' | 'list') || 'grid';
   });
-  const [activeTab, setActiveTab] = useState<'notes' | 'todos'>('notes');
+  const [activeTab, setActiveTab] = useState<'notes' | 'todos' | 'cards'>('notes');
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     return localStorage.getItem('knot_sidebar_open') !== 'false';
   });
@@ -182,16 +187,18 @@ function App() {
   const allTags = useMemo(() => {
     const noteTags = notes.flatMap(n => n.tags);
     const todoTags = todos.flatMap(t => t.tags);
-    return Array.from(new Set([...noteTags, ...todoTags])).sort();
-  }, [notes, todos]);
+    const cardTags = cards.flatMap(c => c.tags);
+    return Array.from(new Set([...noteTags, ...todoTags, ...cardTags])).sort();
+  }, [notes, todos, cards]);
 
   const stats = useMemo(() => {
     return {
       notes: notes.length,
       todos: todos.length,
-      active: activeTab === 'notes' ? notes.length : todos.length
+      cards: cards.length,
+      active: activeTab === 'notes' ? notes.length : (activeTab === 'todos' ? todos.length : cards.length)
     };
-  }, [notes, todos, activeTab]);
+  }, [notes, todos, cards, activeTab]);
 
   const filteredNotes = useMemo(() => {
     return notes.filter(noteItem => {
@@ -219,12 +226,26 @@ function App() {
     });
   }, [todos, searchQuery, selectedTags]);
 
+  const filteredCards = useMemo(() => {
+    return cards.filter(cardItem => {
+      const matchesSearch = cardItem.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           cardItem.bankName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           cardItem.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const matchesTags = selectedTags.length === 0 || 
+                         selectedTags.every(t => cardItem.tags.includes(t));
+      
+      return matchesSearch && matchesTags;
+    });
+  }, [cards, searchQuery, selectedTags]);
 
   const handleCreateNew = () => {
     if (activeTab === 'notes') {
       setEditingNote(null);
-    } else {
+    } else if (activeTab === 'todos') {
       setEditingTodo(null);
+    } else {
+      setEditingCard(null);
     }
     setIsModalOpen(true);
   };
@@ -258,9 +279,23 @@ function App() {
   };
 
   if (!user) return <Login />;
+  const handleSaveCard = async (cardData: Partial<Card>) => {
+    try {
+      if (editingCard) {
+        await updateCard(editingCard.id, cardData);
+        toast.success('Card updated successfully');
+      } else {
+        await addCard(cardData as Omit<Card, 'id' | 'createdAt' | 'updatedAt' | 'userId'>);
+        toast.success('Card added successfully');
+      }
+      setIsModalOpen(false);
+    } catch (error: any) {
+      toast.error('Failed to save card: ' + error.message);
+    }
+  };
 
-  const isLoading = activeTab === 'notes' ? notesLoading : todosLoading;
-  const currentData = activeTab === 'notes' ? filteredNotes : filteredTodos;
+  const isLoading = activeTab === 'notes' ? notesLoading : (activeTab === 'todos' ? todosLoading : cardsLoading);
+  const currentData = activeTab === 'notes' ? filteredNotes : (activeTab === 'todos' ? filteredTodos : filteredCards);
   const isEmpty = !isLoading && currentData.length === 0;
 
   return (
@@ -316,13 +351,13 @@ function App() {
                 <Plus size={48} />
               </EmptyIcon>
               <EmptyTitle>
-                {activeTab === 'notes' ? t('app.emptyState') : t('app.emptyStateTodos')}
+                {activeTab === 'notes' ? t('app.emptyState') : activeTab === 'todos' ? t('app.emptyStateTodos') : t('cards.emptyState')}
               </EmptyTitle>
               <EmptyText>
-                {activeTab === 'notes' ? t('app.noMatch') : t('app.noMatchTodos')}
+                {activeTab === 'notes' ? t('app.noMatch') : activeTab === 'todos' ? t('app.noMatchTodos') : t('cards.searchPlaceholder')}
               </EmptyText>
               <CreateButton onClick={handleCreateNew} data-testid="create-button-empty">
-                <Plus size={18} /> {activeTab === 'notes' ? t('app.newNote') : t('app.newTodo')}
+                <Plus size={18} /> {activeTab === 'notes' ? t('app.newNote') : activeTab === 'todos' ? t('app.newTodo') : t('app.newCard')}
               </CreateButton>
             </EmptyState>
           ) : (
@@ -346,7 +381,7 @@ function App() {
                     data-testid={`note-card-${note.id}`}
                   />
                 ))
-              ) : (
+              ) : activeTab === 'todos' ? (
                 filteredTodos.map(todo => (
                   <TodoCard 
                     key={todo.id} 
@@ -363,6 +398,17 @@ function App() {
                       setIsShareModalOpen(true);
                     }}
                     data-testid={`todo-card-${todo.id}`}
+                  />
+                ))
+              ) : (
+                filteredCards.map(card => (
+                  <CardCard 
+                    key={card.id} 
+                    card={card} 
+                    onClick={() => {
+                      setEditingCard(card);
+                      setIsModalOpen(true);
+                    }}
                   />
                 ))
               )}
@@ -414,6 +460,18 @@ function App() {
             if (editingTodo) {
               shareTodo(editingTodo.id, sharedWith);
             }
+          }}
+        />
+      )}
+
+      {isModalOpen && activeTab === 'cards' && (
+        <CardModal 
+          card={editingCard}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveCard}
+          onDelete={(id: string) => {
+            deleteCard(id);
+            setIsModalOpen(false);
           }}
         />
       )}
