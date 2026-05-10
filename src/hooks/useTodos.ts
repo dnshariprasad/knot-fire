@@ -19,7 +19,7 @@ export const useTodos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { encryptTodo, decryptTodo, masterKey, isSkipped } = useCrypto();
+  const { encryptTodo, decryptTodo, masterKey } = useCrypto();
 
   useEffect(() => {
     if (!user) {
@@ -52,7 +52,7 @@ export const useTodos = () => {
     });
 
     return () => unsubscribe();
-  }, [user, masterKey, isSkipped]);
+  }, [user, masterKey]);
 
   const addTodo = async (todo: Omit<Todo, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     if (!user) return;

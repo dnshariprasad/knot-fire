@@ -1,14 +1,17 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
-  X, Tag as TagIcon, Trash2, Plus, Check, Calendar, Hash, Edit2, Share2, MoreVertical, Users
+  X, Tag as TagIcon, Trash2, Plus, Check, Calendar, Hash, Edit2, Share2, MoreVertical, Users, Lock as LockIcon, Eye, EyeOff
 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
+import { useCrypto } from '../../../context/CryptoContext';
+import { LockScreen } from '../../layout/LockScreen';
 import type { Todo, TodoItem } from '../../../types';
 import { Modal } from '../../common/Modal';
 import { ConfirmModal } from '../../common/ConfirmModal';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import toast from 'react-hot-toast';
 import * as S from './styles';
 
 const ShareModal = lazy(() => import('../../notes/ShareModal').then(m => ({ default: m.ShareModal })));
@@ -41,6 +44,15 @@ export const TodoModal: React.FC<TodoModalProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
+  const { masterKey, setKey } = useCrypto();
+  const [isEncrypted, setIsEncrypted] = useState(todo?.isEncrypted || false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+
+  const isLocked = (todo?.isEncrypted || isEncrypted) && !isUnlocked;
+
+  const [revealedTitle, setRevealedTitle] = useState(false);
+  const [revealedItems, setRevealedItems] = useState(false);
+
   useEffect(() => {
     if (todo) {
       setTitle(todo.title || '');
@@ -53,6 +65,8 @@ export const TodoModal: React.FC<TodoModalProps> = ({
       setTagList([]);
       setIsEditing(true);
     }
+    setRevealedTitle(false);
+    setRevealedItems(false);
   }, [todo]);
 
   const handleAddTodo = () => {
@@ -88,7 +102,8 @@ export const TodoModal: React.FC<TodoModalProps> = ({
     onSave({
       title,
       items,
-      tags: tagList
+      tags: tagList,
+      isEncrypted
     });
   };
 
@@ -163,14 +178,29 @@ export const TodoModal: React.FC<TodoModalProps> = ({
         )
       }
     >
-      {isEditing ? (
+      {isLocked ? (
+        <div style={{ padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+          <LockScreen 
+            onUnlock={(enteredKey) => {
+              if (!masterKey) {
+                setKey(enteredKey);
+                setIsUnlocked(true);
+              } else if (enteredKey === masterKey) {
+                setIsUnlocked(true);
+              } else {
+                toast.error(t('security.invalidKey') || 'Invalid Master Key');
+              }
+            }} 
+            onSkip={() => {}} 
+          />
+        </div>
+      ) : isEditing ? (
         <S.EditContainer>
           <S.TitleWrapper>
             <S.TitleInput 
               placeholder={t('notes.titleLabel')}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              autoFocus
             />
           </S.TitleWrapper>
 
@@ -242,10 +272,37 @@ export const TodoModal: React.FC<TodoModalProps> = ({
                />
              </S.TagInputWrapper>
           </S.TagSection>
+
+          <S.SettingsSection>
+            <S.SectionLabel><LockIcon size={14} /> {t('security.title') || 'Security & Privacy'}</S.SectionLabel>
+            <S.SettingsRow>
+              <S.SettingsInfo>
+                <S.SettingsTitle>{t('todos.secure') || 'Secure Todo'}</S.SettingsTitle>
+                <S.SettingsDesc>{t('todos.secureDesc') || 'Encrypt this entire list with your Master Key'}</S.SettingsDesc>
+              </S.SettingsInfo>
+              <S.SettingsToggle 
+                $active={isEncrypted} 
+                onClick={() => setIsEncrypted(!isEncrypted)}
+              >
+                <S.SettingsToggleThumb $active={isEncrypted} />
+              </S.SettingsToggle>
+            </S.SettingsRow>
+          </S.SettingsSection>
         </S.EditContainer>
       ) : (
         <S.ViewContainer>
-           {title && <S.ViewTitle>{title}</S.ViewTitle>}
+           {title && (
+             <S.ViewTitleWrapper>
+               <S.ViewTitle $blurred={todo?.isEncrypted && !revealedTitle}>
+                 {todo?.isEncrypted && !revealedTitle ? '••••••••••••' : title}
+               </S.ViewTitle>
+               {todo?.isEncrypted && (
+                 <S.RevealIconButton onClick={() => setRevealedTitle(!revealedTitle)}>
+                   {revealedTitle ? <EyeOff size={16} /> : <Eye size={16} />}
+                 </S.RevealIconButton>
+               )}
+             </S.ViewTitleWrapper>
+           )}
            
            {tagList.length > 0 && (
              <S.ViewTags>
@@ -258,6 +315,14 @@ export const TodoModal: React.FC<TodoModalProps> = ({
            )}
 
            <S.TodoSection>
+             <S.ViewTitleWrapper style={{ marginBottom: '1rem' }}>
+               <S.SectionLabel style={{ margin: 0 }}>{t('notes.todoItems') || 'Tasks'}</S.SectionLabel>
+               {todo?.isEncrypted && (
+                 <S.RevealIconButton onClick={() => setRevealedItems(!revealedItems)}>
+                   {revealedItems ? <EyeOff size={16} /> : <Eye size={16} />}
+                 </S.RevealIconButton>
+               )}
+             </S.ViewTitleWrapper>
              <S.ItemsList>
                {items.map(item => (
                  <S.TodoItem 
@@ -269,7 +334,9 @@ export const TodoModal: React.FC<TodoModalProps> = ({
                    <S.Checkbox $checked={item.completed}>
                      {item.completed && <Check size={14} />}
                    </S.Checkbox>
-                   <S.TodoText $completed={item.completed}>{item.text}</S.TodoText>
+                   <S.TodoText $completed={item.completed} $blurred={todo?.isEncrypted && !revealedItems}>
+                     {todo?.isEncrypted && !revealedItems ? '••••••••••••••••' : item.text}
+                   </S.TodoText>
                  </S.TodoItem>
                ))}
              </S.ItemsList>

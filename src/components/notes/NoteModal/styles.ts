@@ -242,24 +242,29 @@ export const QuickActionToolbar = styled.div`
 `;
 
 export const QuickActionButton = styled.button<{ $active?: boolean }>`
-  background: ${({ theme, $active }) => $active ? theme.colors.primary + '10' : theme.colors.surfaceLight};
+  background: ${({ theme, $active }) => $active ? theme.colors.primary + '15' : theme.colors.surfaceLight};
   border: 1px solid ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
   color: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.textMuted};
   padding: 0.45rem 0.75rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
   font-weight: 800;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  transition: all 0.2s ease;
+  gap: 0.5rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.primary};
-    background: ${({ theme }) => theme.colors.primary + '10'};
+    background: ${({ theme }) => theme.colors.primary + '25'};
+    transform: translateY(-1px);
+  }
+
+  svg {
+    opacity: ${({ $active }) => $active ? 1 : 0.6};
   }
 `;
 
@@ -524,28 +529,9 @@ export const Button = styled.button<{ $variant?: 'primary' | 'outline' | 'danger
   }}
 `;
 
-export const Toggle = styled.button<{ $active: boolean }>`
-  width: 36px;
-  height: 18px;
-  border-radius: 18px;
-  background: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
-  position: relative;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: ${({ $active }) => $active ? '20px' : '2px'};
-    width: 14px;
-    height: 14px;
-    background: white;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-  }
-`;
+
+
 
 export const ViewContent = styled.div`
   display: flex;
@@ -560,17 +546,41 @@ export const ViewHeader = styled.div`
   gap: 0.5rem;
 `;
 
-export const ViewTitle = styled.h1`
+export const ViewHeaderWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+`;
+
+export const ViewTitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+`;
+
+export const ViewTitle = styled.h1<{ $blurred?: boolean }>`
   font-size: 1.5rem;
   font-weight: 900;
   color: ${({ theme }) => theme.colors.text};
+  filter: ${({ $blurred }) => $blurred ? 'blur(8px)' : 'none'};
+  transition: filter 0.3s ease;
 `;
 
-export const ViewBody = styled.p`
+export const ViewBodyWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-top: 1.5rem;
+`;
+
+export const ViewBody = styled.p<{ $blurred?: boolean }>`
   font-size: 1.125rem;
   line-height: 1.7;
   color: ${({ theme }) => theme.colors.text};
   white-space: pre-wrap;
+  filter: ${({ $blurred }) => $blurred ? 'blur(10px)' : 'none'};
+  transition: filter 0.3s ease;
 `;
 
 export const ViewTags = styled.div`
@@ -814,13 +824,6 @@ export const ViewContainer = styled.div`
   flex-direction: column;
   gap: 1.5rem;
   flex: 1;
-`;
-
-export const ViewHeaderWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
 `;
 
 export const FieldValueWrapper = styled.div`
@@ -1128,5 +1131,71 @@ export const SharedBadge = styled.div<{ $variant?: 'primary' | 'secondary' }>`
   span {
     line-height: 1;
   }
+`;
+
+export const SettingsSection = styled.div`
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+export const SectionLabel = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.textMuted};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+`;
+
+export const SettingsRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: ${({ theme }) => theme.colors.surfaceLight + '30'};
+  border-radius: 12px;
+  margin-top: 0.75rem;
+`;
+
+export const SettingsInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+export const SettingsTitle = styled.div`
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+export const SettingsDesc = styled.div`
+  font-size: 0.75rem;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+export const SettingsToggle = styled.div<{ $active: boolean }>`
+  width: 44px;
+  height: 24px;
+  background: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+`;
+
+export const SettingsToggleThumb = styled.div<{ $active: boolean }>`
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: ${({ $active }) => $active ? '23px' : '3px'};
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 `;
 

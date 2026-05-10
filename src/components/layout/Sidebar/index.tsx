@@ -7,9 +7,11 @@ import {
   ChevronRight,
   Settings,
   LogOut,
-  User
+  User,
+  Lock
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import { useCrypto } from '../../../context/CryptoContext';
 import * as S from './styles';
 
 interface SidebarProps {
@@ -36,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const { masterKey, clearKey } = useCrypto();
 
   return (
     <S.SidebarContainer $isOpen={isOpen} data-testid={testId}>
@@ -100,6 +103,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </S.UserInfo>
           )}
         </S.UserSection>
+
+        {masterKey && (
+          <S.NavItem onClick={clearKey} title={t('security.lockVault') || 'Lock Vault'}>
+            <Lock size={22} style={{ color: '#ff4d4d' }} />
+            {isOpen && <S.NavItemLabel>{t('security.lockVault') || 'Lock Vault'}</S.NavItemLabel>}
+          </S.NavItem>
+        )}
 
         <S.NavItem onClick={logout} title={t('auth.logout')}>
           <LogOut size={22} />

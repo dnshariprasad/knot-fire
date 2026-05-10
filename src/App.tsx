@@ -17,8 +17,6 @@ import { useTodos } from './hooks/useTodos';
 import { Toaster } from 'react-hot-toast';
 import { GlobalStyles } from './styles/GlobalStyles';
 import { useTheme } from './styles/ThemeContext';
-import { useCrypto } from './context/CryptoContext';
-import { LockScreen } from './components/layout/LockScreen';
 import { FAB } from './components/layout/FAB';
 import { Navigation } from './components/layout/Navigation';
 import { Sidebar } from './components/layout/Sidebar';
@@ -157,7 +155,6 @@ function App() {
   const { notes, loading: notesLoading, addNote, updateNote, deleteNote, shareNote } = useNotes();
   const { todos, loading: todosLoading, addTodo, updateTodo, deleteTodo, shareTodo } = useTodos();
   const { themeMode, toggleTheme } = useTheme();
-  const { masterKey, setKey, setSkipped, isSkipped } = useCrypto();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -222,9 +219,6 @@ function App() {
     });
   }, [todos, searchQuery, selectedTags]);
 
-  // ONLY show lock screen if we actually have encrypted notes AND user hasn't explicitly skipped unlocking them
-  const anyEncrypted = useMemo(() => notes.some(n => n.isEncrypted), [notes]);
-  const shouldShowLock = anyEncrypted && !masterKey && !isSkipped;
 
   const handleCreateNew = () => {
     if (activeTab === 'notes') {
@@ -264,10 +258,6 @@ function App() {
   };
 
   if (!user) return <Login />;
-
-  if (shouldShowLock) {
-    return <LockScreen onUnlock={setKey} onSkip={() => setSkipped(true)} />;
-  }
 
   const isLoading = activeTab === 'notes' ? notesLoading : todosLoading;
   const currentData = activeTab === 'notes' ? filteredNotes : filteredTodos;

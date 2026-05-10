@@ -108,6 +108,27 @@ export const SkipButton = styled.button`
   }
 `;
 
+export const ForgotButton = styled.button`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0.25rem;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+export const RecoveryContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
 export const SecurityBadge = styled.div`
   display: flex;
   align-items: center;

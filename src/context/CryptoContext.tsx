@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState } from 'react';
 import { encrypt, decrypt } from '../utils/cryptoUtils';
 import type { Note, Todo } from '../types';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import toast from 'react-hot-toast';
 
 interface CryptoContextType {
   masterKey: string | null;
@@ -10,21 +13,19 @@ interface CryptoContextType {
   encryptTodo: (todo: Partial<Todo>) => any;
   decryptTodo: (todo: any) => Todo;
   clearKey: () => void;
-  isSkipped: boolean;
-  setSkipped: (skipped: boolean) => void;
+  generateRecoveryKey: () => string;
+  saveRecoveryData: (recoveryKey: string, userId: string) => Promise<void>;
+  recoverMasterKey: (recoveryKey: string, userId: string) => Promise<string | null>;
 }
 
 const CryptoContext = createContext<CryptoContextType | null>(null);
 
 export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [masterKey, setMasterKey] = useState<string | null>(() => sessionStorage.getItem('master_key'));
-  const [isSkipped, setIsSkipped] = useState(() => localStorage.getItem('encryption_skipped') === 'true');
 
   const setKey = (key: string) => {
     setMasterKey(key);
     sessionStorage.setItem('master_key', key);
-    localStorage.removeItem('encryption_skipped');
-    setIsSkipped(false);
   };
 
   const clearKey = () => {
@@ -32,18 +33,9 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     sessionStorage.removeItem('master_key');
   };
 
-  const setSkipped = (skipped: boolean) => {
-    setIsSkipped(skipped);
-    if (skipped) {
-      localStorage.setItem('encryption_skipped', 'true');
-    } else {
-      localStorage.removeItem('encryption_skipped');
-    }
-  };
-
   const encryptNote = (note: Partial<Note>) => {
-    if (!masterKey) {
-      return { ...note, isEncrypted: false };
+    if (!note.isEncrypted || !masterKey) {
+      return { ...note, isEncrypted: !!note.isEncrypted && !!masterKey };
     }
     
     return {
@@ -74,19 +66,14 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         })) : []
       };
     } catch (e) {
-      return {
-        ...note,
-        title: '[Decryption Failed]',
-        content: '[Decryption Failed]',
-        tags: [],
-        customFields: []
-      } as any;
+      console.error("Decryption failed", e);
+      return note as Note; 
     }
   };
 
   const encryptTodo = (todo: Partial<Todo>) => {
-    if (!masterKey) {
-      return { ...todo, isEncrypted: false };
+    if (!todo.isEncrypted || !masterKey) {
+      return { ...todo, isEncrypted: !!todo.isEncrypted && !!masterKey };
     }
     
     return {
@@ -115,20 +102,64 @@ export const CryptoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         tags: todo.tags ? todo.tags.map((t: string) => decrypt(t, masterKey)) : []
       };
     } catch (e) {
-      return {
-        ...todo,
-        title: '[Decryption Failed]',
-        items: [],
-        tags: []
-      } as any;
+      console.error("Decryption failed", e);
+      return todo as Todo;
     }
+  };
+
+  const generateRecoveryKey = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let result = '';
+    for (let i = 0; i < 16; i++) {
+      if (i > 0 && i % 4 === 0) result += '-';
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
+  const saveRecoveryData = async (recoveryKey: string, userId: string) => {
+    if (!masterKey) return;
+    
+    try {
+      const encryptedMasterKey = encrypt(masterKey, recoveryKey);
+      await setDoc(doc(db, 'user_security', userId), {
+        encryptedMasterKey,
+        updatedAt: Date.now()
+      });
+      toast.success('Recovery data saved successfully');
+    } catch (e) {
+      console.error("Failed to save recovery data", e);
+      toast.error('Failed to save recovery data');
+    }
+  };
+
+  const recoverMasterKey = async (recoveryKey: string, userId: string) => {
+    try {
+      const docRef = doc(db, 'user_security', userId);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        const { encryptedMasterKey } = docSnap.data();
+        const recoveredKey = decrypt(encryptedMasterKey, recoveryKey);
+        if (recoveredKey) {
+          setKey(recoveredKey);
+          return recoveredKey;
+        }
+      }
+    } catch (e) {
+      console.error("Recovery failed", e);
+    }
+    return null;
   };
 
   return (
     <CryptoContext.Provider value={{ 
       masterKey, setKey, encryptNote, decryptNote, 
       encryptTodo, decryptTodo,
-      clearKey, isSkipped, setSkipped 
+      clearKey,
+      generateRecoveryKey,
+      saveRecoveryData,
+      recoverMasterKey
     }}>
       {children}
     </CryptoContext.Provider>

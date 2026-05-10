@@ -4,9 +4,10 @@ import type { Todo } from '../../../types';
 import { 
   Hash, 
   Users,
-  ListTodo, CheckCircle2, Circle, Share2
+  ListTodo, CheckCircle2, Circle, Share2, Lock
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import { maskText } from '../../../utils/masking';
 import * as S from '../../notes/NoteCard/styles'; // Reusing styles for visual consistency
 
 interface TodoCardProps {
@@ -23,6 +24,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({ todo, onClick, onToggleTag, 
 
   const isSharedWithMe = todo.userId !== user?.uid;
   const collaboratorsCount = todo.sharedWithUids?.length || 0;
+  const isSecure = todo.isEncrypted;
 
   const todoItems = todo.items || [];
   const completedCount = todoItems.filter(i => i.completed).length;
@@ -39,16 +41,17 @@ export const TodoCard: React.FC<TodoCardProps> = ({ todo, onClick, onToggleTag, 
       onClick={onClick}
     >
       <S.Header>
-        {todo.title && <S.Title>{todo.title}</S.Title>}
+        {todo.title && <S.Title $blurred={isSecure}>{isSecure ? maskText(todo.title) : todo.title}</S.Title>}
+        {isSecure && <Lock size={12} style={{ opacity: 0.5 }} />}
       </S.Header>
 
       {todoItems.length > 0 && (
         <>
-          <S.TodoPreview>
+          <S.TodoPreview style={{ filter: isSecure ? 'blur(6px)' : 'none', opacity: isSecure ? 0.3 : 1 }}>
             {todoItems.slice(0, 3).map((item) => (
               <S.TodoPreviewItem key={item.id} $completed={item.completed}>
                 {item.completed ? <CheckCircle2 size={12} /> : <Circle size={12} />}
-                <span>{item.text}</span>
+                <span>{isSecure ? '••••••••' : item.text}</span>
               </S.TodoPreviewItem>
             ))}
             {todoItems.length > 3 && (
@@ -57,7 +60,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({ todo, onClick, onToggleTag, 
               </S.TodoPreviewItem>
             )}
           </S.TodoPreview>
-          <S.TodoProgress>
+          <S.TodoProgress style={{ filter: isSecure ? 'blur(4px)' : 'none', opacity: isSecure ? 0.3 : 1 }}>
             <S.TodoProgressText>
               {Math.round(progressPercent)}%
             </S.TodoProgressText>
@@ -68,11 +71,20 @@ export const TodoCard: React.FC<TodoCardProps> = ({ todo, onClick, onToggleTag, 
         </>
       )}
 
+      {isSecure && (
+        <S.PrivateOverlay>
+          <S.PrivateBadge>
+            <Lock size={14} />
+            Secure Todo
+          </S.PrivateBadge>
+        </S.PrivateOverlay>
+      )}
+
       {todo.tags.length > 0 && (
-        <S.TagContainer>
+        <S.TagContainer $blurred={isSecure}>
           {todo.tags.map(tag => (
             <S.Tag key={tag} onClick={(e) => { e.stopPropagation(); onToggleTag(tag); }}>
-              <Hash size={8} /> {tag}
+              <Hash size={8} /> {isSecure ? '••••' : tag}
             </S.Tag>
           ))}
         </S.TagContainer>

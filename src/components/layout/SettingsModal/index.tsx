@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Lock, Unlock, CheckCircle2, Settings, Globe } from 'lucide-react';
+import { Lock, Unlock, CheckCircle2, Settings, Globe, Shield, Key, Copy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCrypto } from '../../../context/CryptoContext';
+import { useAuth } from '../../../context/AuthContext';
 import { Modal } from '../../common/Modal';
 import toast from 'react-hot-toast';
 import * as S from './styles';
@@ -14,27 +15,36 @@ type TabType = 'general' | 'security';
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
   const { t, i18n } = useTranslation();
-  const { masterKey, setKey, clearKey, setSkipped } = useCrypto();
+  const { user } = useAuth();
+  const { masterKey, setKey, generateRecoveryKey, saveRecoveryData } = useCrypto();
+  
   const [activeTab, setActiveTab] = useState<TabType>('general');
   const [newKey, setNewKey] = useState('');
-  const [isEnabling, setIsEnabling] = useState(false);
+  const [recoveryKey, setRecoveryKey] = useState<string | null>(null);
 
-  const handleEnable = () => {
+  const handleSetKey = async () => {
     if (newKey.length < 4) {
-      toast.error(t('security.keyTooShort'));
+      toast.error(t('security.keyTooShort') || 'Key must be at least 4 characters');
       return;
     }
+    
     setKey(newKey);
-    toast.success(t('security.enableSuccess'));
-    setIsEnabling(false);
+    const generated = generateRecoveryKey();
+    setRecoveryKey(generated);
+    
+    if (user) {
+      // Temporarily set the key in context so saveRecoveryData can use it
+      await saveRecoveryData(generated, user.uid);
+    }
+    
     setNewKey('');
+    toast.success(t('security.keySetSuccess') || 'Master Key set successfully');
   };
 
-  const handleDisable = () => {
-    if (window.confirm(t('security.disableConfirm'))) {
-      clearKey();
-      setSkipped(true);
-      toast.success(t('security.disableSuccess'));
+  const copyRecoveryKey = () => {
+    if (recoveryKey) {
+      navigator.clipboard.writeText(recoveryKey);
+      toast.success(t('common.copied') || 'Copied to clipboard');
     }
   };
 
@@ -50,17 +60,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
           $active={activeTab === 'general'} 
           onClick={() => setActiveTab('general')}
         >
-          {t('settings.general')}
+          {t('settings.generalTab') || 'General'}
         </S.Tab>
         <S.Tab 
           $active={activeTab === 'security'} 
           onClick={() => setActiveTab('security')}
         >
-          {t('settings.security')}
+          {t('settings.securityTab') || 'Security'}
         </S.Tab>
       </S.TabList>
 
-      <S.ContentWrapper>
+      <S.Body>
         {activeTab === 'general' ? (
           <S.Section>
             <S.SectionTitle>
@@ -98,14 +108,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
         ) : (
           <S.SecurityList>
             <S.Section>
-              <S.SectionTitle>{t('security.encryptionStatus')}</S.SectionTitle>
+              <S.SectionTitle>
+                <S.TitleIconWrapper>
+                  <Shield size={16} /> {t('security.title')}
+                </S.TitleIconWrapper>
+              </S.SectionTitle>
+              <S.DescriptionText $hasMargin>
+                {t('security.keyDescription') || 'Set a Master Key to encrypt your private notes and todos.'}
+              </S.DescriptionText>
+
               <S.StatusCard $active={!!masterKey}>
                 <S.StatusIcon $active={!!masterKey}>
-                  {masterKey ? <Lock size={24} /> : <Unlock size={24} />}
+                  {masterKey ? <Unlock size={24} /> : <Lock size={24} />}
                 </S.StatusIcon>
                 <S.StatusText>
-                  <span>{masterKey ? t('security.statusActive') : t('security.statusDisabled')}</span>
-                  <span>{masterKey ? t('security.statusActiveDesc') : t('security.statusDisabledDesc')}</span>
+                  <span>{masterKey ? t('security.statusUnlocked') || 'Unlocked' : t('security.statusLocked') || 'Locked'}</span>
+                  <span>{masterKey ? t('security.unlockedDesc') || 'Your session is active.' : t('security.lockedDesc') || 'Set or enter your key.'}</span>
                 </S.StatusText>
                 {masterKey && (
                   <S.SuccessIcon>
@@ -113,51 +131,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                   </S.SuccessIcon>
                 )}
               </S.StatusCard>
-            </S.Section>
 
-            {masterKey ? (
-              <S.Section>
-                <S.WarningBox>
-                  <S.WarningIcon size={18} />
-                  <div>{t('security.disableWarning')}</div>
-                </S.WarningBox>
-                <S.Button $variant="danger" onClick={handleDisable}>
-                  {t('security.disableButton')}
+              <S.InlineFlex>
+                <S.Input 
+                  type="password" 
+                  placeholder={t('security.newKeyPlaceholder') || 'Enter New Master Key'} 
+                  value={newKey}
+                  onChange={(e) => setNewKey(e.target.value)}
+                />
+                <S.Button $variant="primary" onClick={handleSetKey}>
+                  <Key size={18} /> {t('security.setKey') || 'Set Key'}
                 </S.Button>
-              </S.Section>
-            ) : isEnabling ? (
-              <S.Section>
-                <S.SectionTitle>{t('security.setMasterKey')}</S.SectionTitle>
-                <S.DescriptionText>
-                  {t('security.keyDescription')}
-                </S.DescriptionText>
-                <S.InlineFlex>
-                  <S.Input 
-                    type="password" 
-                    placeholder={t('security.keyPlaceholder')} 
-                    value={newKey}
-                    onChange={(e) => setNewKey(e.target.value)}
-                    autoFocus
-                  />
-                  <S.Button $variant="primary" onClick={handleEnable}>{t('security.enableButton')}</S.Button>
-                </S.InlineFlex>
-                <S.Button $variant="outline" onClick={() => setIsEnabling(false)}>{t('common.cancel')}</S.Button>
-              </S.Section>
-            ) : (
-              <S.Button $variant="primary" onClick={() => setIsEnabling(true)}>
-                {t('security.enableEncryptionButton')}
-              </S.Button>
-            )}
+              </S.InlineFlex>
 
-            <S.Section>
-              <S.SectionTitle>{t('security.whatIsE2ee')}</S.SectionTitle>
-              <S.DescriptionText>
-                {t('security.e2eeDescription')}
-              </S.DescriptionText>
+              {recoveryKey && (
+                <S.WarningBox style={{ background: '#ecfdf5', borderColor: '#10b981', color: '#065f46', marginTop: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 700, marginBottom: '0.25rem' }}>{t('security.recoveryCode') || 'Recovery Code Generated!'}</p>
+                    <p style={{ marginBottom: '1rem', fontSize: '0.75rem', opacity: 0.8 }}>{t('security.recoveryWarning') || 'Save this code somewhere safe. It is the only way to recover your data if you forget your Master Key.'}</p>
+                    <S.InlineFlex style={{ background: 'rgba(0,0,0,0.05)', padding: '0.75rem', borderRadius: '8px', alignItems: 'center' }}>
+                      <code style={{ fontSize: '1rem', fontWeight: 800, letterSpacing: '0.05em' }}>{recoveryKey}</code>
+                      <S.IconButton onClick={copyRecoveryKey} style={{ marginLeft: 'auto' }}>
+                        <Copy size={16} />
+                      </S.IconButton>
+                    </S.InlineFlex>
+                  </div>
+                </S.WarningBox>
+              )}
             </S.Section>
           </S.SecurityList>
         )}
-      </S.ContentWrapper>
+      </S.Body>
     </Modal>
   );
 };

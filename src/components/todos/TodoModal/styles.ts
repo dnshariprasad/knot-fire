@@ -20,6 +20,17 @@ export const ViewContainer = styled.div`
 
 export const TitleWrapper = styled.div`
   margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+export const ViewTitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 `;
 
 export const TitleInput = styled.input`
@@ -45,12 +56,14 @@ export const TitleInput = styled.input`
   }
 `;
 
-export const ViewTitle = styled.h2`
+export const ViewTitle = styled.h2<{ $blurred?: boolean }>`
   font-size: 1.5rem;
   font-weight: 900;
   color: ${({ theme }) => theme.colors.text};
   letter-spacing: -0.02em;
   margin: 0;
+  filter: ${({ $blurred }) => $blurred ? 'blur(8px)' : 'none'};
+  transition: filter 0.3s ease;
 `;
 
 export const TodoSection = styled.div`
@@ -113,13 +126,14 @@ export const TodoItem = styled(motion.div)<{ $completed?: boolean; $viewOnly?: b
   `}
 `;
 
-export const TodoText = styled.span<{ $completed: boolean }>`
+export const TodoText = styled.span<{ $completed: boolean; $blurred?: boolean }>`
   flex: 1;
   font-size: 1rem;
   font-weight: 500;
   color: ${({ theme, $completed }) => $completed ? theme.colors.textMuted : theme.colors.text};
   text-decoration: ${({ $completed }) => $completed ? 'line-through' : 'none'};
   transition: all 0.2s;
+  filter: ${({ $blurred }) => $blurred ? 'blur(8px)' : 'none'};
 `;
 
 export const Checkbox = styled.div<{ $checked: boolean }>`
@@ -457,3 +471,75 @@ export const SharedBadge = styled.div<{ $variant?: 'primary' | 'secondary' }>`
   }
 `;
 
+
+export const SettingsToggle = styled.div<{ $active: boolean }>`
+  width: 44px;
+  height: 24px;
+  background: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.border};
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+`;
+
+export const SettingsToggleThumb = styled.div<{ $active: boolean }>`
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: ${({ $active }) => $active ? '23px' : '3px'};
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+`;
+
+export const SettingsSection = styled.div`
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+export const SettingsRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: ${({ theme }) => theme.colors.surfaceLight + '30'};
+  border-radius: 12px;
+  margin-top: 0.75rem;
+`;
+
+export const SettingsInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+export const SettingsTitle = styled.div`
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+export const SettingsDesc = styled.div`
+  font-size: 0.75rem;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+export const RevealIconButton = styled.button`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.textMuted};
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primary + '15'};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;

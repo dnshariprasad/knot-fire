@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { 
@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
+import { useCrypto } from '../../../context/CryptoContext';
+import { LockScreen } from '../../layout/LockScreen';
 import type { Note, CustomField } from '../../../types';
 import { Modal } from '../../common/Modal';
 import { ConfirmModal } from '../../common/ConfirmModal';
@@ -49,10 +51,17 @@ export const NoteModal: React.FC<NoteModalProps> = ({
   
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [revealedTitle, setRevealedTitle] = useState(false);
+  const [revealedBody, setRevealedBody] = useState(false);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isFetchingMetadata, setIsFetchingMetadata] = useState(false);
+  const { masterKey, setKey } = useCrypto();
+  const [isEncrypted, setIsEncrypted] = useState(note?.isEncrypted || false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+
+  const isLocked = (note?.isEncrypted || isEncrypted) && !isUnlocked;
 
   const handleMetadataFetch = async (url: string) => {
     setIsFetchingMetadata(true);
@@ -102,6 +111,8 @@ export const NoteModal: React.FC<NoteModalProps> = ({
       setCustomFields([]);
     }
     setRevealedFields({});
+    setRevealedTitle(false);
+    setRevealedBody(false);
     setIsEditing(!note);
   }, [note]);
 
@@ -139,7 +150,8 @@ export const NoteModal: React.FC<NoteModalProps> = ({
       title: titleField ? titleField.value : '',
       content: descField ? descField.value : '',
       tags: [...tagList],
-      customFields: customFields.filter(f => f.label.trim() !== '')
+      customFields: customFields.filter(f => f.label.trim() !== ''),
+      isEncrypted
     });
   };
 
@@ -209,7 +221,23 @@ export const NoteModal: React.FC<NoteModalProps> = ({
         )
       }
     >
-      {isEditing ? (
+      {isLocked ? (
+        <div style={{ padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+          <LockScreen 
+            onUnlock={(enteredKey) => {
+              if (!masterKey) {
+                setKey(enteredKey);
+                setIsUnlocked(true);
+              } else if (enteredKey === masterKey) {
+                setIsUnlocked(true);
+              } else {
+                toast.error(t('security.invalidKey') || 'Invalid Master Key');
+              }
+            }} 
+            onSkip={() => {}} 
+          />
+        </div>
+      ) : isEditing ? (
         <S.EditContainer>
           <S.DynamicFieldsSection>
             <S.SectionHeader>
@@ -375,12 +403,39 @@ export const NoteModal: React.FC<NoteModalProps> = ({
               )}
             </S.TagInputWrapper>
           </S.FormGroup>
+
+          <S.SettingsSection>
+            <S.SectionLabel><LockIcon size={14} /> {t('security.title') || 'Security & Privacy'}</S.SectionLabel>
+            <S.SettingsRow>
+              <S.SettingsInfo>
+                <S.SettingsTitle>{t('notes.secure') || 'Secure Note'}</S.SettingsTitle>
+                <S.SettingsDesc>{t('notes.secureDesc') || 'Encrypt this note with your Master Key'}</S.SettingsDesc>
+              </S.SettingsInfo>
+              <S.SettingsToggle 
+                $active={isEncrypted} 
+                onClick={() => setIsEncrypted(!isEncrypted)}
+              >
+                <S.SettingsToggleThumb $active={isEncrypted} />
+              </S.SettingsToggle>
+            </S.SettingsRow>
+          </S.SettingsSection>
         </S.EditContainer>
       ) : (
         <S.ViewContainer>
           <S.ViewHeaderWrapper>
             {customFields.find(f => f.label.toLowerCase() === 'title')?.value && (
-              <S.ViewTitle>{customFields.find(f => f.label.toLowerCase() === 'title')?.value}</S.ViewTitle>
+              <S.ViewTitleWrapper>
+                <S.ViewTitle $blurred={note?.isEncrypted && !revealedTitle}>
+                  {note?.isEncrypted && !revealedTitle 
+                    ? '••••••••••••' 
+                    : customFields.find(f => f.label.toLowerCase() === 'title')?.value}
+                </S.ViewTitle>
+                {note?.isEncrypted && (
+                  <S.RevealIconButton onClick={() => setRevealedTitle(!revealedTitle)}>
+                    {revealedTitle ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </S.RevealIconButton>
+                )}
+              </S.ViewTitleWrapper>
             )}
             {tagList.length > 0 && (
               <S.ViewTags>
@@ -395,63 +450,79 @@ export const NoteModal: React.FC<NoteModalProps> = ({
 
           {customFields.length > 0 && (
             <S.CustomFieldDisplay>
-              {customFields.map((field, idx) => (
-                <S.FieldCard key={idx}>
-                  <S.CardHeader>
-                    <S.FieldLabel>{field.label}</S.FieldLabel>
-                    <S.ActionIconButton 
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(field.value);
-                          toast.success(t('notes.fieldCopied', { label: field.label }));
-                        } catch (err) {
-                          toast.error(t('notes.copyFailed'));
-                        }
-                      }}
-                    >
-                      <Copy size={12} />
-                    </S.ActionIconButton>
-                  </S.CardHeader>
-                  <S.FieldValue>
-                    <S.FieldValueWrapper>
-                      {field.label.toLowerCase().includes('location') && <MapPin size={14} color="#94a3b8" />}
-                      {field.label.toLowerCase().includes('id') && <UserIcon size={14} color="#94a3b8" />}
-                      {field.label.toLowerCase().includes('pass') && <LockIcon size={14} color="#94a3b8" />}
-                      {field.label.toLowerCase().includes('pass') && !revealedFields[idx] ? (
-                        '••••••••'
-                      ) : isUrl(field.value) ? (
-                        <a href={field.value} target="_blank" rel="noopener noreferrer">
-                          {field.value} <ExternalLink size={12} />
-                        </a>
-                      ) : (
-                        field.value
-                      )}
-
-                      {(field.label.toLowerCase().includes('date') || field.label.toLowerCase().includes('dob')) && (() => {
-                        const period = getPeriodString(field.value);
-                        return period ? (
-                          <S.PeriodBadge>
-                            {period}
-                          </S.PeriodBadge>
-                        ) : null;
-                      })()}
-                      
-                      {field.label.toLowerCase().includes('pass') && (
-                        <S.RevealIconButton 
-                          onClick={() => setRevealedFields(prev => ({ ...prev, [idx]: !prev[idx] }))}
-                        >
-                          {revealedFields[idx] ? <EyeOff size={14} /> : <Eye size={14} />}
-                        </S.RevealIconButton>
-                      )}
-                    </S.FieldValueWrapper>
-                  </S.FieldValue>
-                </S.FieldCard>
-              ))}
+              {customFields.map((field, idx) => {
+                return (
+                  <S.FieldCard key={idx}>
+                    <S.CardHeader>
+                      <S.FieldLabel>
+                        {field.label}
+                      </S.FieldLabel>
+                      <S.ActionIconButton 
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(field.value);
+                            toast.success(t('notes.fieldCopied', { label: field.label }));
+                          } catch (err) {
+                            toast.error(t('notes.copyFailed'));
+                          }
+                        }}
+                      >
+                        <Copy size={12} />
+                      </S.ActionIconButton>
+                    </S.CardHeader>
+                    <S.FieldValue>
+                      <S.FieldValueWrapper>
+                        <>
+                          {field.label.toLowerCase().includes('location') && <MapPin size={14} color="#94a3b8" />}
+                            {field.label.toLowerCase().includes('id') && <UserIcon size={14} color="#94a3b8" />}
+                            {field.label.toLowerCase().includes('pass') && <LockIcon size={14} color="#94a3b8" />}
+                            {(field.label.toLowerCase().includes('pass') || (note?.isEncrypted && !revealedFields[idx])) ? (
+                              '••••••••'
+                            ) : isUrl(field.value) ? (
+                              <a href={field.value} target="_blank" rel="noopener noreferrer">
+                                {field.value} <ExternalLink size={12} />
+                              </a>
+                            ) : (
+                              field.value
+                            )}
+                            {(field.label.toLowerCase().includes('date') || field.label.toLowerCase().includes('dob')) && (() => {
+                              const period = getPeriodString(field.value);
+                              return period && ! (note?.isEncrypted && !revealedFields[idx]) ? (
+                                <S.PeriodBadge>
+                                  {period}
+                                </S.PeriodBadge>
+                              ) : null;
+                            })()}
+                            
+                            {(field.label.toLowerCase().includes('pass') || note?.isEncrypted) && (
+                              <S.RevealIconButton 
+                                onClick={() => setRevealedFields(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                              >
+                                {revealedFields[idx] ? <EyeOff size={14} /> : <Eye size={14} />}
+                              </S.RevealIconButton>
+                            )}
+                        </>
+                      </S.FieldValueWrapper>
+                    </S.FieldValue>
+                  </S.FieldCard>
+                );
+              })}
             </S.CustomFieldDisplay>
           )}
 
           {customFields.find(f => f.label.toLowerCase().includes('desc') || f.label.toLowerCase().includes('content'))?.value && (
-            <S.ViewBody>{customFields.find(f => f.label.toLowerCase().includes('desc') || f.label.toLowerCase().includes('content'))?.value}</S.ViewBody>
+            <S.ViewBodyWrapper>
+              <S.ViewBody $blurred={note?.isEncrypted && !revealedBody}>
+                {note?.isEncrypted && !revealedBody 
+                  ? '••••••••••••••••••••••••••••' 
+                  : customFields.find(f => f.label.toLowerCase().includes('desc') || f.label.toLowerCase().includes('content'))?.value}
+              </S.ViewBody>
+              {note?.isEncrypted && (
+                <S.RevealIconButton onClick={() => setRevealedBody(!revealedBody)} style={{ alignSelf: 'flex-start', marginTop: '0.5rem' }}>
+                  {revealedBody ? <EyeOff size={16} /> : <Eye size={16} />}
+                </S.RevealIconButton>
+              )}
+            </S.ViewBodyWrapper>
           )}
 
           <S.FooterSpacer>

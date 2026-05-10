@@ -3,10 +3,17 @@ import type { Note } from '../../../types';
 import { 
   Hash, 
   Users, 
-  Share2
+  Share2,
+  Lock,
+  MapPin,
+  User as UserIcon,
+  ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import { maskText } from '../../../utils/masking';
 import * as S from './styles';
+
+const isUrl = (val: string) => val?.startsWith('http');
 
 interface NoteCardProps {
   note: Note;
@@ -21,6 +28,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
 
   const isSharedWithMe = note.userId !== user?.uid;
   const collaboratorsCount = note.sharedWithUids?.length || 0;
+  const isSecure = note.isEncrypted;
 
   return (
     <S.Card
@@ -32,24 +40,50 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onClick, onToggleTag, 
       onClick={onClick}
     >
       <S.Header>
-        {note.title && <S.Title>{note.title}</S.Title>}
+        {note.title && <S.Title $blurred={isSecure}>{isSecure ? maskText(note.title) : note.title}</S.Title>}
         {!note.title && <S.HeaderSpacer />}
+        {isSecure && <Lock size={12} style={{ opacity: 0.5 }} />}
       </S.Header>
 
       {note.content && (
-        <S.Content>
-          {note.content}
+        <S.Content $blurred={isSecure}>
+          {isSecure ? maskText(note.content) : note.content}
         </S.Content>
       )}
 
+      {note.customFields?.length > 0 && (
+        <S.FieldsGrid $blurred={isSecure}>
+          {note.customFields.slice(0, 2).map((field, idx) => (
+            <S.FieldItem key={idx}>
+              {field.label.toLowerCase().includes('location') && <MapPin size={12} />}
+              {field.label.toLowerCase().includes('id') && <UserIcon size={12} />}
+              {field.label.toLowerCase().includes('pass') && <Lock size={12} />}
+              {isUrl(field.value) && <ExternalLink size={12} />}
+              <span>
+                <strong>{field.label}:</strong> {isSecure ? maskText(field.value) : field.value}
+              </span>
+            </S.FieldItem>
+          ))}
+        </S.FieldsGrid>
+      )}
+
       {note.tags.length > 0 && (
-        <S.TagContainer>
+        <S.TagContainer $blurred={isSecure}>
           {note.tags.map(tag => (
             <S.Tag key={tag} onClick={(e) => { e.stopPropagation(); onToggleTag(tag); }}>
-              <Hash size={8} /> {tag}
+              <Hash size={8} /> {isSecure ? '••••' : tag}
             </S.Tag>
           ))}
         </S.TagContainer>
+      )}
+
+      {isSecure && (
+        <S.PrivateOverlay>
+          <S.PrivateBadge>
+            <Lock size={14} />
+            Secure Note
+          </S.PrivateBadge>
+        </S.PrivateOverlay>
       )}
 
 

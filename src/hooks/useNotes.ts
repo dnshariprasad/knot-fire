@@ -19,7 +19,7 @@ export const useNotes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { encryptNote, decryptNote, masterKey, isSkipped } = useCrypto();
+  const { encryptNote, decryptNote, masterKey } = useCrypto();
 
   useEffect(() => {
     if (!user) {
@@ -53,7 +53,7 @@ export const useNotes = () => {
     });
 
     return () => unsubscribe();
-  }, [user, masterKey, isSkipped]);
+  }, [user, masterKey]);
 
   const addNote = async (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     if (!user) return;
