@@ -237,8 +237,7 @@ export const Footer = styled.div<{ $blurred?: boolean }>`
   justify-content: space-between;
   align-items: center;
   margin-top: 0.25rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  padding-top: 0.5rem;
   filter: ${({ $blurred }) => $blurred ? 'blur(4px)' : 'none'};
   opacity: ${({ $blurred }) => $blurred ? 0.3 : 1};
 `;

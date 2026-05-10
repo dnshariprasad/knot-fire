@@ -110,11 +110,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
             <S.Section>
               <S.SectionTitle>
                 <S.TitleIconWrapper>
-                  <Shield size={16} /> {t('security.title')}
+                  <Shield size={16} /> {t('security.keyVault')}
                 </S.TitleIconWrapper>
               </S.SectionTitle>
               <S.DescriptionText $hasMargin>
-                {t('security.keyDescription') || 'Set a Master Key to encrypt your private notes and todos.'}
+                {t('security.vaultDesc')}
               </S.DescriptionText>
 
               <S.StatusCard $active={!!masterKey}>

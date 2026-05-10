@@ -30,6 +30,36 @@ export const ShareModal: React.FC<ShareModalProps> = ({ item, onClose, onShare }
   const [email, setEmail] = useState('');
   const [permission, setPermission] = useState<'read' | 'write'>('read');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [allUserEmails, setAllUserEmails] = useState<string[]>([]);
+
+  React.useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'users'));
+        const emails = querySnapshot.docs.map(doc => doc.data().email as string);
+        setAllUserEmails(emails);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  React.useEffect(() => {
+    const query = email.trim().toLowerCase();
+    if (query.length > 1) {
+      const filtered = allUserEmails.filter(e => 
+        e.toLowerCase().includes(query) && 
+        !item.sharedWith?.some(u => u.email.toLowerCase() === e.toLowerCase())
+      );
+      setSuggestions(filtered.slice(0, 5));
+      setShowSuggestions(filtered.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [email, allUserEmails, item.sharedWith]);
 
   const handleAddSharedUser = async () => {
     const trimmedEmail = email.trim().toLowerCase();
@@ -95,7 +125,26 @@ export const ShareModal: React.FC<ShareModalProps> = ({ item, onClose, onShare }
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddSharedUser()}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onFocus={() => email.length > 1 && setShowSuggestions(true)}
               />
+              
+              {showSuggestions && (
+                <S.SuggestionsList>
+                  {suggestions.map((suggestion) => (
+                    <S.SuggestionItem 
+                      key={suggestion}
+                      onClick={() => {
+                        setEmail(suggestion);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      <S.MailIcon size={14} />
+                      {suggestion}
+                    </S.SuggestionItem>
+                  ))}
+                </S.SuggestionsList>
+              )}
               
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>

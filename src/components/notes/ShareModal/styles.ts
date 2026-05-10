@@ -211,6 +211,47 @@ export const ActionGroup = styled.div`
 
 export const ShareInputBox = styled(InputWrapper)`
   flex: 1;
+  position: relative;
+`;
+
+export const SuggestionsList = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 12px;
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+  z-index: 10001;
+  overflow: hidden;
+  animation: slideIn 0.2s ease-out;
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`;
+
+export const SuggestionItem = styled.div`
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceLight};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  svg {
+    opacity: 0.5;
+  }
 `;
 
 export const MailIcon = styled(Mail)`

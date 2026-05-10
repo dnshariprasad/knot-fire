@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   X, Tag as TagIcon, Trash2, Plus, Check, Calendar, Hash, Edit2, Share2, MoreVertical, Users, Lock as LockIcon, Eye, EyeOff
@@ -18,6 +18,7 @@ const ShareModal = lazy(() => import('../../notes/ShareModal').then(m => ({ defa
 
 interface TodoModalProps {
   todo?: Todo | null;
+  allTags: string[];
   onClose: () => void;
   onSave: (todo: Partial<Todo>) => void;
   onDelete?: (id: string) => void;
@@ -26,6 +27,7 @@ interface TodoModalProps {
 
 export const TodoModal: React.FC<TodoModalProps> = ({ 
   todo, 
+  allTags,
   onClose, 
   onSave,
   onDelete,
@@ -48,10 +50,22 @@ export const TodoModal: React.FC<TodoModalProps> = ({
   const [isEncrypted, setIsEncrypted] = useState(todo?.isEncrypted || false);
   const [isUnlocked, setIsUnlocked] = useState(false);
 
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
   const isLocked = (todo?.isEncrypted || isEncrypted) && !isUnlocked;
 
   const [revealedTitle, setRevealedTitle] = useState(false);
   const [revealedItems, setRevealedItems] = useState(false);
+
+  const filteredSuggestions = useMemo(() => {
+    const query = tagInputValue.trim().toLowerCase();
+    if (!query) return [];
+    return allTags.filter(tag => 
+      tag.toLowerCase().includes(query) && 
+      !tagList.includes(tag)
+    );
+  }, [allTags, tagInputValue, tagList]);
 
   useEffect(() => {
     if (todo) {
@@ -267,9 +281,50 @@ export const TodoModal: React.FC<TodoModalProps> = ({
                  id="todo-tag-input"
                  placeholder={t('notes.addTagPlaceholder')}
                  value={tagInputValue}
-                 onChange={(e) => setTagInputValue(e.target.value)}
-                 onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+                 onChange={(e) => {
+                   setTagInputValue(e.target.value);
+                   setShowSuggestions(true);
+                 }}
+                 onKeyDown={(e) => {
+                   if (e.key === 'Enter') {
+                     if (showSuggestions && filteredSuggestions.length > 0) {
+                       const tag = filteredSuggestions[selectedIndex];
+                       if (!tagList.includes(tag)) setTagList([...tagList, tag]);
+                       setTagInputValue('');
+                       setShowSuggestions(false);
+                     } else {
+                       handleAddTag();
+                     }
+                   } else if (e.key === 'ArrowDown') {
+                     setSelectedIndex(prev => (prev + 1) % filteredSuggestions.length);
+                   } else if (e.key === 'ArrowUp') {
+                     setSelectedIndex(prev => (prev - 1 + filteredSuggestions.length) % filteredSuggestions.length);
+                   } else if (e.key === 'Escape') {
+                     setShowSuggestions(false);
+                   }
+                 }}
+                 onFocus={() => setShowSuggestions(true)}
+                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                />
+               
+               {showSuggestions && tagInputValue && filteredSuggestions.length > 0 && (
+                 <S.SuggestionsContainer>
+                   {filteredSuggestions.map((tag: string, idx: number) => (
+                     <S.SuggestionItem 
+                       key={tag}
+                       $selected={idx === selectedIndex}
+                       onMouseDown={(e) => {
+                         e.preventDefault();
+                         if (!tagList.includes(tag)) setTagList([...tagList, tag]);
+                         setTagInputValue('');
+                         setShowSuggestions(false);
+                       }}
+                     >
+                       <Hash size={12} /> {tag}
+                     </S.SuggestionItem>
+                   ))}
+                 </S.SuggestionsContainer>
+               )}
              </S.TagInputWrapper>
           </S.TagSection>
 

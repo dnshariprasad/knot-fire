@@ -157,7 +157,7 @@ function App() {
   const { user } = useAuth();
   const { notes, loading: notesLoading, addNote, updateNote, deleteNote, shareNote } = useNotes();
   const { todos, loading: todosLoading, addTodo, updateTodo, deleteTodo, shareTodo } = useTodos();
-  const { cards, loading: cardsLoading, addCard, updateCard, deleteCard } = useCards();
+  const { cards, loading: cardsLoading, addCard, updateCard, deleteCard, shareCard } = useCards();
   const { themeMode, toggleTheme } = useTheme();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -184,12 +184,21 @@ function App() {
     localStorage.setItem('knot_sidebar_open', String(isSidebarOpen));
   }, [isSidebarOpen]);
 
+  const noteTags = useMemo(() => {
+    return Array.from(new Set(notes.flatMap(n => n.tags))).sort();
+  }, [notes]);
+
+  const todoTags = useMemo(() => {
+    return Array.from(new Set(todos.flatMap(t => t.tags))).sort();
+  }, [todos]);
+
+  const cardTags = useMemo(() => {
+    return Array.from(new Set(cards.flatMap(c => c.tags))).sort();
+  }, [cards]);
+
   const allTags = useMemo(() => {
-    const noteTags = notes.flatMap(n => n.tags);
-    const todoTags = todos.flatMap(t => t.tags);
-    const cardTags = cards.flatMap(c => c.tags);
     return Array.from(new Set([...noteTags, ...todoTags, ...cardTags])).sort();
-  }, [notes, todos, cards]);
+  }, [noteTags, todoTags, cardTags]);
 
   const stats = useMemo(() => {
     return {
@@ -431,48 +440,32 @@ function App() {
 
       {isModalOpen && activeTab === 'notes' && (
         <NoteModal 
-          note={editingNote}
-          allTags={allTags}
+          note={editingNote} 
+          allTags={noteTags}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveNote}
-          onDelete={(id) => {
-            deleteNote(id);
-            setIsModalOpen(false);
-          }}
-          onShare={(sharedWith: any[]) => {
-            if (editingNote) {
-              shareNote(editingNote.id, sharedWith);
-            }
-          }}
+          onDelete={(id) => { deleteNote(id); setIsModalOpen(false); }}
+          onShare={(sharedWith) => editingNote && shareNote(editingNote.id, sharedWith)}
         />
       )}
-
-      {isModalOpen && activeTab === 'todos' && (
+      {activeTab === 'todos' && isModalOpen && (
         <TodoModal 
-          todo={editingTodo}
+          todo={editingTodo} 
+          allTags={todoTags}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveTodo}
-          onDelete={(id: string) => {
-            deleteTodo(id);
-            setIsModalOpen(false);
-          }}
-          onShare={(sharedWith: any[]) => {
-            if (editingTodo) {
-              shareTodo(editingTodo.id, sharedWith);
-            }
-          }}
+          onDelete={(id) => { deleteTodo(id); setIsModalOpen(false); }}
+          onShare={(sharedWith) => editingTodo && shareTodo(editingTodo.id, sharedWith)}
         />
       )}
-
-      {isModalOpen && activeTab === 'cards' && (
+      {activeTab === 'cards' && isModalOpen && (
         <CardModal 
-          card={editingCard}
+          card={editingCard} 
+          allTags={cardTags}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveCard}
-          onDelete={(id: string) => {
-            deleteCard(id);
-            setIsModalOpen(false);
-          }}
+          onDelete={(id) => { deleteCard(id); setIsModalOpen(false); }}
+          onShare={(sharedWith) => editingCard && shareCard(editingCard.id, sharedWith)}
         />
       )}
 

@@ -118,7 +118,10 @@ export const Select = styled.select`
   appearance: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: ${({ theme }) => {
+    const color = theme.colors.text.replace('#', '%23');
+    return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='${color}' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`;
+  }};
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 1.2rem;
@@ -176,6 +179,107 @@ export const DropdownItem = styled(DropdownMenu.Item)`
       background: ${({ theme }) => theme.colors.error}15;
     }
   }
+`;
+
+export const SuggestionsContainer = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 12px;
+  margin-top: 0.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+`;
+
+export const SuggestionItem = styled.div<{ $selected?: boolean }>`
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${({ theme, $selected }) => $selected ? theme.colors.primary : theme.colors.text};
+  background: ${({ theme, $selected }) => $selected ? theme.colors.surfaceLight : 'transparent'};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceLight};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+export const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+export const CloseButton = styled.button`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.textMuted};
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceLight};
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;
+
+export const MoreButton = styled.button`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.textMuted};
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceLight};
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;
+
+export const ActionButton = styled.button<{ $variant?: 'primary' | 'outline' }>`
+  padding: 0.625rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  ${({ theme, $variant }) => $variant === 'primary' ? css`
+    background: ${theme.colors.primary};
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px ${theme.colors.primary}44;
+    &:hover { transform: translateY(-1px); box-shadow: 0 6px 16px ${theme.colors.primary}66; }
+  ` : css`
+    background: transparent;
+    color: ${theme.colors.text};
+    border: 1px solid ${theme.colors.border};
+    &:hover { background: ${theme.colors.surfaceLight}; }
+  `}
 `;
 
 export const FixedActionButton = styled.button<{ $variant?: 'primary' | 'outline' }>`

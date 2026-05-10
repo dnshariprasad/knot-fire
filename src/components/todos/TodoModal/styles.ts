@@ -263,6 +263,39 @@ export const TagChip = styled.div`
   }
 `;
 
+export const SuggestionsContainer = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 12px;
+  margin-top: 0.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+`;
+
+export const SuggestionItem = styled.div<{ $selected?: boolean }>`
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${({ theme, $selected }) => $selected ? theme.colors.primary : theme.colors.text};
+  background: ${({ theme, $selected }) => $selected ? theme.colors.surfaceLight : 'transparent'};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceLight};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
 export const ViewTags = styled.div`
   display: flex;
   flex-wrap: wrap;

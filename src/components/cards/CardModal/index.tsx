@@ -1,31 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, CreditCard, Shield, Trash2, Plus, Minus, Edit2, MoreVertical } from 'lucide-react';
+import { 
+  X, CreditCard, Shield, Trash2, Plus, Minus, Edit2, 
+  MoreVertical, Share2, Hash 
+} from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useCrypto } from '../../../context/CryptoContext';
 import { LockScreen } from '../../layout/LockScreen';
 import toast from 'react-hot-toast';
-import type { Card } from '../../../types';
+import type { Card, SharedUser } from '../../../types';
 import * as S from './styles';
 import { AnimatePresence } from 'framer-motion';
 
+const ShareModal = lazy(() => import('../../notes/ShareModal').then(m => ({ default: m.ShareModal })));
+
+const COMMON_BANKS = [
+  'HDFC Bank', 'SBI', 'ICICI Bank', 'Axis Bank', 'Kotak Mahindra', 
+  'IDFC First', 'IndusInd Bank', 'Canara Bank', 'Bank of Baroda', 
+  'Standard Chartered', 'American Express', 'HSBC', 'DBS'
+];
+
 interface CardModalProps {
   card?: Card | null;
+  allTags: string[];
   onClose: () => void;
   onSave: (card: Partial<Card>) => void;
   onDelete: (id: string) => void;
+  onShare: (sharedWith: SharedUser[]) => void;
 }
 
 export const CardModal: React.FC<CardModalProps> = ({ 
   card, 
+  allTags,
   onClose, 
   onSave, 
-  onDelete 
+  onDelete,
+  onShare
 }) => {
   const { t } = useTranslation();
   const { masterKey, setKey } = useCrypto();
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isEditing, setIsEditing] = useState(!card);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  
   const isLocked = card && !isUnlocked;
 
   const [formData, setFormData] = useState<Partial<Card>>({
@@ -34,6 +53,7 @@ export const CardModal: React.FC<CardModalProps> = ({
     cardNumber: '',
     expiryDate: '',
     cvv: '',
+    pin: '',
     type: 'credit',
     network: 'visa',
     bankName: '',
@@ -48,14 +68,23 @@ export const CardModal: React.FC<CardModalProps> = ({
   const [newBenefit, setNewBenefit] = useState('');
   const [newTag, setNewTag] = useState('');
 
+  const filteredSuggestions = useMemo(() => {
+    const query = newTag.trim().toLowerCase();
+    if (!query) return [];
+    return allTags.filter(tag => 
+      tag.toLowerCase().includes(query) && 
+      !(formData.tags || []).includes(tag)
+    );
+  }, [allTags, newTag, formData.tags]);
+
   useEffect(() => {
     if (card) {
       setFormData(card);
     }
   }, [card]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     onSave(formData);
   };
 
@@ -77,12 +106,14 @@ export const CardModal: React.FC<CardModalProps> = ({
   };
 
   const addTag = () => {
-    if (newTag.trim()) {
+    const val = newTag.trim().toLowerCase();
+    if (val && !(formData.tags || []).includes(val)) {
       setFormData(prev => ({
         ...prev,
-        tags: [...(prev.tags || []), newTag.trim()]
+        tags: [...(prev.tags || []), val]
       }));
       setNewTag('');
+      setShowSuggestions(false);
     }
   };
 
@@ -105,11 +136,42 @@ export const CardModal: React.FC<CardModalProps> = ({
               <CreditCard size={24} />
               {card ? (isEditing ? t('cards.editCard') : t('cards.viewCard')) : t('cards.newCard')}
             </S.Title>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <S.IconButton onClick={onClose}>
-                <X size={20} />
-              </S.IconButton>
-            </div>
+            <S.HeaderActions>
+              {card && !isEditing && (
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger asChild>
+                    <S.MoreButton>
+                      <MoreVertical size={20} />
+                    </S.MoreButton>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Portal>
+                    <S.DropdownContent sideOffset={5}>
+                      <S.DropdownItem onSelect={() => setShowShareModal(true)}>
+                        <Share2 size={16} /> {t('common.share')}
+                      </S.DropdownItem>
+                      <DropdownMenu.Separator style={{ height: 1, backgroundColor: 'rgba(0,0,0,0.1)', margin: '4px 0' }} />
+                      <S.DropdownItem onSelect={() => onDelete(card.id)} className="danger">
+                        <Trash2 size={16} /> {t('common.delete')}
+                      </S.DropdownItem>
+                    </S.DropdownContent>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Root>
+              )}
+
+              {isEditing ? (
+                <S.ActionButton $variant="primary" onClick={() => handleSubmit()}>
+                  {t('common.save')}
+                </S.ActionButton>
+              ) : (
+                <S.ActionButton $variant="primary" onClick={() => setIsEditing(true)}>
+                  <Edit2 size={18} /> {t('common.edit')}
+                </S.ActionButton>
+              )}
+              
+              <S.CloseButton onClick={onClose}>
+                <X size={24} />
+              </S.CloseButton>
+            </S.HeaderActions>
           </S.Header>
 
           {isLocked ? (
@@ -162,18 +224,21 @@ export const CardModal: React.FC<CardModalProps> = ({
                       <option value="amex">American Express</option>
                       <option value="discover">Discover</option>
                       <option value="rupay">RuPay</option>
-                      <option value="other">Other</option>
                     </S.Select>
                   </S.FormGroup>
                 </S.Grid>
 
                 <S.FormGroup>
                   <S.Label>{t('cards.bankName')}</S.Label>
-                  <S.Input 
-                    placeholder="e.g. HDFC, Chase, etc."
+                  <S.Select 
                     value={formData.bankName}
                     onChange={e => setFormData({ ...formData, bankName: e.target.value })}
-                  />
+                  >
+                    <option value="">Select Bank</option>
+                    {COMMON_BANKS.map(bank => (
+                      <option key={bank} value={bank}>{bank}</option>
+                    ))}
+                  </S.Select>
                 </S.FormGroup>
 
                 <S.FormGroup>
@@ -264,7 +329,7 @@ export const CardModal: React.FC<CardModalProps> = ({
                           onChange={e => setNewBenefit(e.target.value)}
                           onKeyPress={e => e.key === 'Enter' && addBenefit()}
                         />
-                        <S.Button onClick={addBenefit}><Plus size={18} /> {t('cards.addBenefit')}</S.Button>
+                        <S.Button onClick={addBenefit}><Plus size={18} /> {t('common.add')}</S.Button>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
                         {formData.benefits?.map((benefit, i) => (
@@ -282,21 +347,78 @@ export const CardModal: React.FC<CardModalProps> = ({
 
                 <S.FormGroup>
                   <S.Label>{t('notes.tagsLabel')}</S.Label>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ position: 'relative', display: 'flex', gap: '0.5rem' }}>
                     <S.Input 
-                      placeholder={t('notes.addTagPlaceholder')}
+                      placeholder={t('cards.addTag')}
                       value={newTag}
-                      onChange={e => setNewTag(e.target.value)}
-                      onKeyPress={e => e.key === 'Enter' && addTag()}
+                      onChange={e => {
+                        setNewTag(e.target.value);
+                        setShowSuggestions(true);
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (showSuggestions && filteredSuggestions.length > 0) {
+                            const tag = filteredSuggestions[selectedIndex];
+                            if (!(formData.tags || []).includes(tag)) {
+                              setFormData(prev => ({ ...prev, tags: [...(prev.tags || []), tag] }));
+                            }
+                            setNewTag('');
+                            setShowSuggestions(false);
+                          } else {
+                            addTag();
+                          }
+                        } else if (e.key === 'ArrowDown') {
+                          setSelectedIndex(prev => (prev + 1) % filteredSuggestions.length);
+                        } else if (e.key === 'ArrowUp') {
+                          setSelectedIndex(prev => (prev - 1 + filteredSuggestions.length) % filteredSuggestions.length);
+                        } else if (e.key === 'Escape') {
+                          setShowSuggestions(false);
+                        }
+                      }}
+                      onFocus={() => setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                     />
-                    <S.Button onClick={addTag}><Plus size={18} /> {t('cards.addBenefit')}</S.Button>
+
+                    {showSuggestions && newTag && filteredSuggestions.length > 0 && (
+                      <S.SuggestionsContainer>
+                        {filteredSuggestions.map((tag: string, idx: number) => (
+                          <S.SuggestionItem 
+                            key={tag}
+                            $selected={idx === selectedIndex}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              if (!(formData.tags || []).includes(tag)) {
+                                setFormData(prev => ({ ...prev, tags: [...(prev.tags || []), tag] }));
+                              }
+                              setNewTag('');
+                              setShowSuggestions(false);
+                            }}
+                            onMouseEnter={() => setSelectedIndex(idx)}
+                          >
+                            <Hash size={12} /> {tag}
+                          </S.SuggestionItem>
+                        ))}
+                      </S.SuggestionsContainer>
+                    )}
+                    <S.Button onClick={addTag}><Plus size={18} /> {t('common.add')}</S.Button>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.75rem' }}>
+                    {formData.tags?.map(tag => (
+                      <S.BenefitItem key={tag} style={{ padding: '0.375rem 0.75rem', borderRadius: '10px' }}>
+                        <Hash size={12} /> {tag}
+                        <S.IconButton onClick={() => setFormData(prev => ({ ...prev, tags: prev.tags?.filter(t => t !== tag) }))}>
+                          <X size={12} />
+                        </S.IconButton>
+                      </S.BenefitItem>
+                    ))}
                   </div>
                 </S.FormGroup>
               </S.Body>
 
               <S.Footer>
                 <S.Button $variant="ghost" onClick={card ? () => setIsEditing(false) : onClose}>{t('common.cancel')}</S.Button>
-                <S.Button $variant="primary" onClick={handleSubmit}>
+                <S.Button $variant="primary" onClick={() => handleSubmit()}>
                   <Shield size={18} /> {t('cards.saveSecurely')}
                 </S.Button>
               </S.Footer>
@@ -353,45 +475,41 @@ export const CardModal: React.FC<CardModalProps> = ({
                     <S.Label>{t('cards.benefits')}</S.Label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
                       {formData.benefits.map((benefit, i) => (
-                        <S.BenefitItem key={i} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                        <S.BenefitItem key={i}>
                           {benefit}
                         </S.BenefitItem>
                       ))}
                     </div>
                   </S.FormGroup>
                 )}
+                
+                {formData.tags && formData.tags.length > 0 && (
+                  <S.FormGroup>
+                    <S.Label>{t('notes.tagsLabel')}</S.Label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                      {formData.tags.map(tag => (
+                        <S.BenefitItem key={tag} style={{ padding: '0.375rem 0.75rem', borderRadius: '10px' }}>
+                          <Hash size={12} /> {tag}
+                        </S.BenefitItem>
+                      ))}
+                    </div>
+                  </S.FormGroup>
+                )}
               </S.Body>
-              <S.Footer>
-                <DropdownMenu.Root>
-                  <DropdownMenu.Trigger asChild>
-                    <S.FixedActionButton $variant="outline">
-                      <MoreVertical size={20} />
-                    </S.FixedActionButton>
-                  </DropdownMenu.Trigger>
-                  <DropdownMenu.Portal>
-                    <S.DropdownContent sideOffset={5}>
-                      <S.DropdownItem 
-                        onSelect={() => {
-                          if (card && window.confirm(t('cards.deleteConfirm'))) {
-                            onDelete(card.id);
-                          }
-                        }}
-                        className="danger"
-                      >
-                        <Trash2 size={16} /> {t('common.delete')}
-                      </S.DropdownItem>
-                    </S.DropdownContent>
-                  </DropdownMenu.Portal>
-                </DropdownMenu.Root>
-
-                <S.Button $variant="primary" onClick={() => setIsEditing(true)}>
-                  <Edit2 size={18} /> {t('cards.editCard')}
-                </S.Button>
-              </S.Footer>
             </>
           )}
         </S.Modal>
       </S.Overlay>
+      
+      {showShareModal && card && (
+        <Suspense fallback={null}>
+          <ShareModal
+            item={card}
+            onClose={() => setShowShareModal(false)}
+            onShare={onShare}
+          />
+        </Suspense>
+      )}
     </AnimatePresence>
   );
 };
